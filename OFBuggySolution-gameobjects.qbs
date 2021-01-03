@@ -16,9 +16,9 @@ Project{
             "src/myObject.h",
             "src/palletobject.cpp",
             "src/palletobject.h",
-            'src/main.cpp',
-            'src/ofApp.cpp',
-            'src/ofApp.h',
+            "src/main.cpp",
+            "src/ofApp.cpp",
+            "src/ofApp.h",
         ]
 
         of.addons: [ 'ofxAssimpModelLoader'

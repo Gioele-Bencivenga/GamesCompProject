@@ -10,10 +10,10 @@
  * @brief This class wraps an ODE physics entity and its graphics elements together into a single game object.
  * Thanks to Adam Stanton for providing it.
  */
-class myObject
+class MyObject
 {
 public:
-    myObject(float _x, float _y, float _z, dWorldID _world, dSpaceID _space);
+    MyObject(float _x, float _y, float _z, dWorldID _world, dSpaceID _space);
 
     // ODE objects
     dBodyID objBody;
@@ -30,7 +30,7 @@ public:
     void setPosition(float _x, float _y, float _z);
     void draw();
 
-    bool debugDraw = false;
+    bool debugDraw = true;
 
     // object's length, width and height
     const float objLength = 1, objWidth = 1, objHeight = 0.1;

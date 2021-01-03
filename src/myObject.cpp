@@ -9,7 +9,7 @@
  * @param _world world where the object will be created
  * @param _space space where the object will be created?
  */
-myObject::myObject(float _x, float _y, float _z, dWorldID _world, dSpaceID _space)
+MyObject::MyObject(float _x, float _y, float _z, dWorldID _world, dSpaceID _space)
 {
     // assign passed in values to our vars
     x = _x; y = _y; z = _z;
@@ -37,7 +37,7 @@ myObject::myObject(float _x, float _y, float _z, dWorldID _world, dSpaceID _spac
  * @param _y the new y position
  * @param _z the new z position
  */
-void myObject::setPosition(float _x, float _y, float _z)
+void MyObject::setPosition(float _x, float _y, float _z)
 {
     x = _x; y = _y; z = _z;
 }
@@ -46,25 +46,25 @@ void myObject::setPosition(float _x, float _y, float _z)
  * @brief The draw method pulls the latest data from ODE and draws the model at that location and orientation.
  * Thanks to Adam Stanton for providing it.
  */
-void PalletObject::draw()
+void MyObject::draw()
 {
     /* Get data from ODE */
-    const dReal* thePos = dBodyGetPosition(m_body);
-    const dReal* oderot = dBodyGetQuaternion(m_body);
+    const dReal* thePos = dBodyGetPosition(objBody);
+    const dReal* oderot = dBodyGetQuaternion(objBody);
 
     /* Set the position (of this PalletObject object) */
     setPosition(thePos[0],thePos[1], thePos[2]);
 
     /* Get ODEs rotation quaternion, convert it to an OF one,
      * and then collect the angle and vector from that: */
-    m_rotation = ofQuaternion(oderot[1], oderot[2], oderot[3], oderot[0]);
+    objRotation = ofQuaternion(oderot[1], oderot[2], oderot[3], oderot[0]);
     float rotationAmount;
     ofVec3f rotationAngle;
-    m_rotation.getRotate(rotationAmount, rotationAngle);
+    objRotation.getRotate(rotationAmount, rotationAngle);
 
     /* We can draw a transparent white box where the ODE object is, to
      * make sure that our model is being drawn approximately correctly */
-    if(debug_draw) {
+    if(debugDraw) {
         ofSetColor(ofColor::white,128);
         /* Save the current state of the graphics transform stack: */
         ofPushMatrix();
@@ -92,7 +92,7 @@ void PalletObject::draw()
     ofRotateDeg(rotationAmount, rotationAngle.x, rotationAngle.y, rotationAngle.z);
 
     /* Draw the model: */
-    m_model.drawFaces();
+    objModel.drawFaces();
 
     /* Restore the transformation matrix: */
     ofPopMatrix();
