@@ -80,6 +80,8 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
+    //cam.orbit(0, 0, 10, player->objModel.getPosition()); why does the program crash?
+
     dSpaceCollide (space,0,&nearCallback);
     dWorldStep (world,0.05);
 
