@@ -7,6 +7,6 @@ ofApp *myApp;
 //========================================================================
 int main( ){
     myApp = new ofApp();
-    ofSetupOpenGL(1024,768,OF_WINDOW);
+    ofSetupOpenGL(3000,1700,OF_WINDOW);
     ofRunApp(myApp);
 }

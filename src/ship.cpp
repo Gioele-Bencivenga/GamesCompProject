@@ -1,49 +1,11 @@
-#include "myObject.h"
-#include "ode/ode.h"
+#include "ship.h"
 
-/**
- * @brief Creates the object with its physical and graphical components according to passed values.
- * @param _x x position where the object will be created
- * @param _y y position where the object will be created
- * @param _z z position where the object will be created
- * @param _world world where the object will be created
- * @param _space space where the object will be created?
- */
-MyObject::MyObject(float _x, float _y, float _z, dWorldID _world, dSpaceID _space)
+Ship::Ship(float _x, float _y, float _z, dWorldID _world, dSpaceID _space) : MyObject(_x, _y, _z, _world, _space)
 {
-    setPosition(_x, _y, _z);
-
-    // physics objs setup
-    objBody = dBodyCreate(_world);
-    dBodySetPosition(objBody, _x, _y, _z);
-    dMassSetBox(&objMass, 1, objLength, objWidth, objHeight);
-    dMassAdjust(&objMass, 1);
-    dBodySetMass(objBody, &objMass);
-    objGeom = dCreateBox(_space, objLength, objWidth, objHeight);
-    dGeomSetBody(objGeom, objBody);
-
-    setModel("alien.dae");
-
-    // colour randomly assigned
-    objColour.set(ofRandom(1, 254), ofRandom(1, 254), ofRandom(1, 254));
+    setModel("ship_speederA.dae");
 }
 
-void MyObject::setPosition(float _x, float _y, float _z)
-{
-    x = _x; y = _y; z = _z;
-}
-
-void MyObject::setModel(string _modelName){
-    // load model
-    objModel.loadModel(_modelName, true);
-
-    // adjust model orientation
-    double scale = 1.0 / objModel.getNormalizedScale();
-    objModel.setScale(scale, scale, scale);
-    objModel.setRotation(0, 90.0, 1, 0, 0);
-}
-
-void MyObject::draw()
+void Ship::draw()
 {
     /* Get data from ODE */
     const dReal* thePos = dBodyGetPosition(objBody);
@@ -62,7 +24,7 @@ void MyObject::draw()
     /* We can draw a transparent white box where the ODE object is, to
      * make sure that our model is being drawn approximately correctly */
     if(drawObject) {
-        ofSetColor(objColour, 256);
+        ofSetColor(ofColor::white,128);
         /* Save the current state of the graphics transform stack: */
         ofPushMatrix();
 

@@ -2,7 +2,8 @@
 
 #include "ofMain.h"
 #include "ode/ode.h"
-#include "palletobject.h"
+#include "myObject.h"
+#include "ship.h"
 
 #include "ofxAssimpModelLoader.h"
 
@@ -31,13 +32,11 @@ public:
     /* These variables are straight from demo_buggy.cpp */
     dWorldID world;
     dSpaceID space;
-    dBodyID body[4];
-    dJointID joint[3];
+    dBodyID body[1];
     dJointGroupID contactgroup;
     dGeomID ground;
     dSpaceID car_space;
     dGeomID box[1];
-    dGeomID sphere[3];
     dGeomID ground_box;
     dReal speed,steer;
 
@@ -50,22 +49,14 @@ public:
     void drawBox(const dReal*pos_ode, const dQuaternion rot_ode, const dReal*sides_ode);
     void drawCyl(const dReal*pos_ode, const dQuaternion rot_ode, dReal len, dReal rad);
 
-    /* A ground plane in graphics */
-    ofPlanePrimitive m_ground;
+    /// LIGHTS
+    //ofLight m_light1;
 
-    /* A texture for it */
-    ofTexture m_groundTex;
+    /// PLAYER
+    Ship* player;
 
-    /* A light */
-    ofLight m_light1;
-
-    /* Some 3D models */
-    ofxAssimpModelLoader m_penguin;
-    ofxAssimpModelLoader m_lowpolytree;
-
-    /* A vector of pallets */
-    std::vector<PalletObject*> pallets;
-
+    ///OBJECTS
+    std::vector<MyObject*> myObjects;
 };
 
 /* ODE requires a global function to use as the collision callback; this
