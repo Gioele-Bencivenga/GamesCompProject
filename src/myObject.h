@@ -15,7 +15,9 @@
 class MyObject
 {
 public:
-    MyObject(float _x, float _y, float _z, dWorldID _world, dSpaceID _space);
+    MyObject(float _x, float _y, float _z,
+             float _length, float _width, float _height,
+             ofQuaternion _rotation, dWorldID _world, dSpaceID _space);
 
     /// ODE OBJECTS
     dBodyID objBody;
@@ -33,7 +35,7 @@ public:
     ofQuaternion objRotation;
 
     /// LENGTH, WIDTH, HEIGHT
-    const float objLength = ofRandom(0.1, 5), objWidth = ofRandom(0.1, 5), objHeight = ofRandom(0.1, 5);
+    float objLength = 0.1, objWidth = 0.1, objHeight = 0.1;
 
     /// METHODS
     /**
@@ -43,6 +45,10 @@ public:
      * @param _z the new z position
      */
     void setPosition(float _x, float _y, float _z);
+    /**
+     * @brief Gets the object's position and returns it as an ofPoint
+     */
+    ofPoint getModelPosition();
     /**
      * @brief Sets the object's model and adjusts its orientation and scale.
      * @param _modelName the filename of the .dae model.

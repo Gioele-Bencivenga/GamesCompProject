@@ -50,10 +50,12 @@ public:
     void drawCyl(const dReal*pos_ode, const dQuaternion rot_ode, dReal len, dReal rad);
 
     /// LIGHTS
-    //ofLight m_light1;
+    ofLight m_light1;
 
     /// PLAYER
     Ship* player;
+    bool isPlayerExistent = false; // flag to know whether the player is instantiated or not
+    glm::vec3 playerPos;
 
     ///OBJECTS
     std::vector<MyObject*> myObjects;

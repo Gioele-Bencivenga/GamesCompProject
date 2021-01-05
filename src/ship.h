@@ -12,13 +12,12 @@
 class Ship : public MyObject
 {
 public:
-    Ship(float _x, float _y, float _z, dWorldID _world, dSpaceID _space);
+    Ship(float _x, float _y, float _z, float _length, float _width, float _height, ofQuaternion _rotation, dWorldID _world, dSpaceID _space);
 
-    /// LENGTH, WIDTH, HEIGHT
-    const float objLength = 1.2, objWidth = 1.5, objHeight = 0.2; // something's fucky with these dimensions, look out
+    ofLight shipLight;
 
     // we only want to draw the ship's hitbox when debugging
-    bool drawObject = true;
+    bool drawObject = false;
 
     /**
      * @brief The draw() method is overridden since it's used to draw solid objects

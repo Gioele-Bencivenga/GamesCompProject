@@ -64,26 +64,31 @@ void ofApp::setup(){
     dAllocateODEDataForThread(dAllocateMaskAll);
 
     /* The light */
-    //m_light1.setPosition(8,8,5);
+    m_light1.setPosition(0,0,20);
     //m_light1.lookAt(glm::vec3(0,0,0));
-    //m_light1.enable();
+    m_light1.enable();
 
     // create the player with dynamic storage duration since the player will live for a long period of time
-    Ship *player = new Ship(0, 0, 30, world, space);
+    Ship *player = new Ship(0, 0, 30, 0.8, 1.2, 0.3, *new ofQuaternion(0, 0, 0, 0), world, space);
     myObjects.push_back(player);
+    isPlayerExistent = true;
 
     // create some objects
-    for(unsigned int p=0; p<20; p++) {
-        myObjects.push_back(new MyObject(ofRandom(-15,15), ofRandom(-15,15), ofRandom(5,20), world, space));
+    for(unsigned int p=0; p<60; p++) {
+        myObjects.push_back(new MyObject(ofRandom(-30, 30), ofRandom(-30, 30), ofRandom(5, 40),
+                                         ofRandom(0.1, 5), ofRandom(0.1, 5), ofRandom(0.1, 5),
+                                         *new ofQuaternion(ofRandom(0, 50), 0, 0, 0), world, space));
     }
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
-    //cam.orbit(0, 0, 10, player->objModel.getPosition()); why does the program crash?
+    if(isPlayerExistent == true){
+        //cam.orbit(0, 0, 10, player->getModelPosition());
+    }
 
     dSpaceCollide (space,0,&nearCallback);
-    dWorldStep (world,0.05);
+    dWorldStep (world,0.04);
 
     // remove all contact joints
     dJointGroupEmpty (contactgroup);
@@ -129,12 +134,15 @@ void ofApp::draw(){
 }
 //--------------------------------------------------------------
 void ofApp::exit() {
-        dGeomDestroy(box[0]);
+    // delete all of the geometries of the objects in the group
+    for(unsigned int p=0; p<myObjects.size() - 1; p++) {
+        dGeomDestroy(myObjects[p]->objGeom);
+    }
 
-        dJointGroupDestroy(contactgroup);
-        dSpaceDestroy (space);
-        dWorldDestroy (world);
-        dCloseODE();
+    dJointGroupDestroy(contactgroup);
+    dSpaceDestroy (space);
+    dWorldDestroy (world);
+    dCloseODE();
 }
 //--------------------------------------------------------------
 static void nearCallback (void *, dGeomID o1, dGeomID o2) {
@@ -198,31 +206,29 @@ void ofApp::drawBox(const dReal*pos_ode, const dQuaternion rot_ode, const dReal*
 
 void ofApp::collide(dGeomID o1, dGeomID o2)
 {
-  int i,n;
+    int g1 = (o1 == ground || o1 == ground_box);
+    int g2 = (o2 == ground || o2 == ground_box);
+    if (!(g1 ^ g2)) return; // if we are not colliding with anything we return
 
-  // only collide things with the ground
-  int g1 = (o1 == ground || o1 == ground_box);
-  int g2 = (o2 == ground || o2 == ground_box);
-  if (!(g1 ^ g2)) return;
-
-  const int N = 10;
-  dContact contact[N];
-  n = dCollide (o1,o2,N,&contact[0].geom,sizeof(dContact));
-  if (n > 0) {
-    for (i=0; i<n; i++) {
-      contact[i].surface.mode = dContactSlip1 | dContactSlip2 |
-        dContactSoftERP | dContactSoftCFM | dContactApprox1;
-      contact[i].surface.mu = dInfinity;
-      contact[i].surface.slip1 = 0.1;
-      contact[i].surface.slip2 = 0.1;
-      contact[i].surface.soft_erp = 0.5;
-      contact[i].surface.soft_cfm = 0.3;
-      dJointID c = dJointCreateContact (world,contactgroup,&contact[i]);
-      dJointAttach (c,
-                    dGeomGetBody(contact[i].geom.g1),
-                    dGeomGetBody(contact[i].geom.g2));
+    const int N = 10;
+    dContact contact[N];
+    int i,n;
+    n = dCollide (o1,o2,N,&contact[0].geom,sizeof(dContact));
+    if (n > 0) {
+        for (i=0; i<n; i++) {
+            contact[i].surface.mode = dContactSlip1 | dContactSlip2 |
+                    dContactSoftERP | dContactSoftCFM | dContactApprox1;
+            contact[i].surface.mu = dInfinity;
+            contact[i].surface.slip1 = 0.1;
+            contact[i].surface.slip2 = 0.1;
+            contact[i].surface.soft_erp = 0.5;
+            contact[i].surface.soft_cfm = 0.3;
+            dJointID c = dJointCreateContact (world,contactgroup,&contact[i]);
+            dJointAttach (c,
+                          dGeomGetBody(contact[i].geom.g1),
+                          dGeomGetBody(contact[i].geom.g2));
+        }
     }
-  }
 }
 
 
@@ -231,26 +237,26 @@ void ofApp::keyPressed(int key){
 
     switch(key) {
     case 'a': case 'A':
-      speed += 0.3;
-      break;
+        speed += 0.3;
+        break;
     case 'z': case 'Z':
-      speed -= 0.3;
-      break;
+        speed -= 0.3;
+        break;
     case ',':
-      steer -= 0.5;
-      break;
+        steer -= 0.5;
+        break;
     case '.':
-      steer += 0.5;
-      break;
+        steer += 0.5;
+        break;
     case ' ':
-      speed = 0;
-      steer = 0;
+        speed = 0;
+        steer = 0;
         break;
     case 'q':
         ofExit();
         break;
     }
-//    cout<<speed<<endl;
+    //    cout<<speed<<endl;
 }
 
 //--------------------------------------------------------------

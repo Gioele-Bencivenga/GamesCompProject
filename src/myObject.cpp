@@ -9,9 +9,14 @@
  * @param _world world where the object will be created
  * @param _space space where the object will be created?
  */
-MyObject::MyObject(float _x, float _y, float _z, dWorldID _world, dSpaceID _space)
+MyObject::MyObject(float _x, float _y, float _z,
+                   float _length, float _width, float _height,
+                   ofQuaternion _rotation, dWorldID _world, dSpaceID _space)
 {
     setPosition(_x, _y, _z);
+
+    objLength = _length, objWidth = _width, objHeight = _height;
+    objRotation = _rotation;
 
     // physics objs setup
     objBody = dBodyCreate(_world);
@@ -33,6 +38,11 @@ void MyObject::setPosition(float _x, float _y, float _z)
     x = _x; y = _y; z = _z;
 }
 
+ofPoint MyObject::getModelPosition()
+{
+    return objModel.getPosition();
+}
+
 void MyObject::setModel(string _modelName){
     // load model
     objModel.loadModel(_modelName, true);
@@ -41,6 +51,7 @@ void MyObject::setModel(string _modelName){
     double scale = 1.0 / objModel.getNormalizedScale();
     objModel.setScale(scale, scale, scale);
     objModel.setRotation(0, 90.0, 1, 0, 0);
+    objModel.setPosition(objModel.getPosition().x, objModel.getPosition().y + 0.35, objModel.getPosition().z - 0.3);
 }
 
 void MyObject::draw()
