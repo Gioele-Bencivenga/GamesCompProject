@@ -46,9 +46,13 @@ public:
      */
     void setPosition(float _x, float _y, float _z);
     /**
-     * @brief Gets the object's position and returns it as an ofPoint
+     * @brief Gets the object's body
      */
-    ofPoint getModelPosition();
+    dBodyID getBody();
+    /**
+     * @brief Gets the object's model
+     */
+    ofxAssimpModelLoader getModel();
     /**
      * @brief Sets the object's model and adjusts its orientation and scale.
      * @param _modelName the filename of the .dae model.

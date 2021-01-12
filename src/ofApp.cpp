@@ -83,8 +83,24 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
-    if(isPlayerExistent == true){
-        //cam.orbit(0, 0, 10, player->getModelPosition());
+
+    // makes the game crash
+    if(isPlayerExistent){
+    // rough camera follow?
+        const dReal *b = dBodyGetPosition(player->objBody); // player->objBody is the var I want to inspect
+    //    player->objModel.setPosition(b[0],b[1],b[2]);
+    //    cam.setPosition(b[0],b[1]-200,b[2]+130);
+    //    cam.setTarget(player->objModel.getPosition());
+    }
+
+    // very strange output
+    cout<<dBodyGetPosition(body[0]);
+
+    if(isPlayerExistent){
+        const dReal *b = dBodyGetPosition(body[0]);
+        //player->objModel.setPosition(b[0],b[1],b[2]);
+        cam.setPosition(b[0],b[0]-200,b[0]+130);
+        //cam.setTarget(player->objModel.getPosition());
     }
 
     dSpaceCollide (space,0,&nearCallback);

@@ -4,7 +4,7 @@ Ship::Ship(float _x, float _y, float _z, float _length, float _width, float _hei
 {
     setModel("ship_speederA.dae");
 
-    shipLight.setPosition(this->getModelPosition());
+    shipLight.setPosition(this->getModel().getPosition());
     //shipLight.lookAt();
     shipLight.enable();
 }

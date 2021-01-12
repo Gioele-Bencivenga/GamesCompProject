@@ -38,9 +38,13 @@ void MyObject::setPosition(float _x, float _y, float _z)
     x = _x; y = _y; z = _z;
 }
 
-ofPoint MyObject::getModelPosition()
+dBodyID MyObject::getBody(){
+    return objBody;
+}
+
+ofxAssimpModelLoader MyObject::getModel()
 {
-    return objModel.getPosition();
+    return objModel;
 }
 
 void MyObject::setModel(string _modelName){
