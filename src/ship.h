@@ -13,7 +13,7 @@ class Ship : public MyObject
 {
 public:
     Ship();
-    Ship(float _x, float _y, float _z, float _length, float _width, float _height, ofQuaternion _rotation, dWorldID _world, dSpaceID _space);
+    explicit Ship(float _x, float _y, float _z, float _length, float _width, float _height, ofQuaternion _rotation, dWorldID _world, dSpaceID _space);
 
     ofLight shipLight;
 

@@ -16,7 +16,7 @@ class MyObject
 {
 public:
     MyObject();
-    MyObject(float _x, float _y, float _z,
+    explicit MyObject(float _x, float _y, float _z,
              float _length, float _width, float _height,
              ofQuaternion _rotation, dWorldID _world, dSpaceID _space);
 

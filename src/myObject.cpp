@@ -1,14 +1,7 @@
 #include "myObject.h"
 #include "ode/ode.h"
 
-MyObject::MyObject(){
-    setPosition(0, 0, 0);
-
-    objLength = 1, objWidth = 1, objHeight = 1;
-    //objRotation = 0; find way to actually play with rotations
-
-    //setupPhysics(0, 0, 0, );
-}
+MyObject::MyObject(){}
 
 /**
  * @brief Creates the object with its physical and graphical components according to passed values.

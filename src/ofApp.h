@@ -53,7 +53,7 @@ public:
     ofLight m_light1;
 
     /// PLAYER
-    Ship* player;
+    Ship player;
     bool isPlayerExistent = false; // flag to know whether the player is instantiated or not
     glm::vec3 playerPos;
 

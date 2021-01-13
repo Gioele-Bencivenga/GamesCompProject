@@ -69,8 +69,8 @@ void ofApp::setup(){
     m_light1.enable();
 
     // create the player with dynamic storage duration since the player will live for a long period of time
-    Ship *player = new Ship(0, 0, 30, 0.8, 1.2, 0.3, *new ofQuaternion(0, 0, 0, 0), world, space);
-    myObjects.push_back(player);
+    Ship player = Ship(0, 0, 30, 0.8, 1.2, 0.3, *new ofQuaternion(0, 0, 0, 0), world, space);
+    myObjects.push_back(&player);
     isPlayerExistent = true;
 
     // create some objects
@@ -84,9 +84,11 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
 
-    // makes the game crash
+    //cout<<*(player->objBody);
+
     if(isPlayerExistent){
-        const dReal *b = dBodyGetPosition(*player.objBody); // player->objBody is the var I want to inspect
+        // makes the game crash
+        const dReal *b = dBodyGetPosition(player.objBody); // player->objBody is the var I want to inspect
     //    player->objModel.setPosition(b[0],b[1],b[2]);
     //    cam.setPosition(b[0],b[1]-200,b[2]+130);
     //    cam.setTarget(player->objModel.getPosition());
