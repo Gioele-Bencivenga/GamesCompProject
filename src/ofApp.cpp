@@ -14,14 +14,12 @@ static const dVector3 yunit = { 0, 1, 0 }, zunit = { 0, 0, 1 };
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-
     /* Ensure texture sizes are normalized */
     /* Note that textures must be square! */
     ofDisableArbTex();
 
     int i;
     dMass m;
-    speed=0, steer=0;
 
     // create world
     dInitODE2(0);
@@ -63,13 +61,15 @@ void ofApp::setup(){
 
     dAllocateODEDataForThread(dAllocateMaskAll);
 
-    /* The light */
+    // light
     m_light1.setPosition(0,0,20);
     //m_light1.lookAt(glm::vec3(0,0,0));
     m_light1.enable();
 
-    // create the player with dynamic storage duration since the player will live for a long period of time
-    Ship player = Ship(0, 0, 30, 0.8, 1.2, 0.3, *new ofQuaternion(0, 0, 0, 0), world, space);
+    // setup input keys
+    for(unsigned int i=0; i<65536; i++) keys[i] = 0;
+    // create player
+    player = Ship(0, 0, 30, 0.8, 1.2, 0.3, *new ofQuaternion(0, 0, 0, 0), world, space);
     myObjects.push_back(&player);
     isPlayerExistent = true;
 
@@ -84,14 +84,12 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
 
-    //cout<<*(player->objBody);
-
     if(isPlayerExistent){
-        // makes the game crash
-        const dReal *b = dBodyGetPosition(player.objBody); // player->objBody is the var I want to inspect
-    //    player->objModel.setPosition(b[0],b[1],b[2]);
-    //    cam.setPosition(b[0],b[1]-200,b[2]+130);
-    //    cam.setTarget(player->objModel.getPosition());
+        getInput();
+        const dReal *b = dBodyGetPosition(player.getBody());
+        player.objModel.setPosition(b[0],b[1],b[2]);
+        cam.setPosition(b[0],b[1]-20,b[2]+10);
+        cam.setTarget(player.objModel.getPosition());
     }
 
     dSpaceCollide (space,0,&nearCallback);
@@ -101,7 +99,52 @@ void ofApp::update(){
     dJointGroupEmpty (contactgroup);
 
 }
-//--------------------------------------------------------------
+
+void ofApp::getInput(){
+    if(player.speed < player.maxSpeed)
+        if (keys[OF_KEY_UP])
+            player.speed += 0.025;
+
+    if(player.speed > -player.maxSpeed)
+        if (keys[OF_KEY_DOWN])
+            player.speed -= 0.025;
+
+    if(player.steer < player.maxSteer)
+        if (keys[OF_KEY_RIGHT])
+            player.steer += 0.025;
+
+    if(player.steer > -player.maxSteer)
+        if (keys[OF_KEY_LEFT])
+            player.steer -= 0.025;
+
+    // put in a move() method inside Ship? when you figure out how to actually move it that is
+    //dBodySetForce(player.getBody(), 0, player.speed, 0);
+    dBodyAddRelForce(player.getBody(), 0, player.speed, 0);
+}
+
+void ofApp::keyPressed(int _key){
+//  There is an OF_KEY_X macro for the keys, but you can also
+//  detect the numeric code and use that if you want to:
+    std::cout << "Keycode " << _key << "was pressed." << std::endl;
+
+    keys[_key] = 1;
+
+    switch(_key) {
+    case ' ':
+      player.speed = 0;
+      player.steer = 0;
+        break;
+    case 'q':
+        ofExit();
+        break;
+    }
+}
+
+void ofApp::keyReleased(int _key){
+
+    keys[_key] = 0;
+}
+
 void ofApp::draw(){
 
     // draw the scene
@@ -139,7 +182,7 @@ void ofApp::draw(){
 
     ofPopMatrix();
 }
-//--------------------------------------------------------------
+
 void ofApp::exit() {
     // delete all of the geometries of the objects in the group
     for(unsigned int p=0; p<myObjects.size() - 1; p++) {
@@ -237,40 +280,6 @@ void ofApp::collide(dGeomID o1, dGeomID o2)
         }
     }
 }
-
-
-//--------------------------------------------------------------
-void ofApp::keyPressed(int key){
-
-    switch(key) {
-    case 'a': case 'A':
-        speed += 0.3;
-        break;
-    case 'z': case 'Z':
-        speed -= 0.3;
-        break;
-    case ',':
-        steer -= 0.5;
-        break;
-    case '.':
-        steer += 0.5;
-        break;
-    case ' ':
-        speed = 0;
-        steer = 0;
-        break;
-    case 'q':
-        ofExit();
-        break;
-    }
-    //    cout<<speed<<endl;
-}
-
-//--------------------------------------------------------------
-void ofApp::keyReleased(int key){
-
-}
-
 //--------------------------------------------------------------
 void ofApp::mouseMoved(int x, int y ){
 

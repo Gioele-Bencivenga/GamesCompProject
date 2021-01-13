@@ -1,13 +1,18 @@
 #include "ship.h"
 
-Ship::Ship(){}
+Ship::Ship(){
+    MyObject();
+}
 
 Ship::Ship(float _x, float _y, float _z, float _length, float _width, float _height, ofQuaternion _rotation, dWorldID _world, dSpaceID _space) : MyObject(_x, _y, _z, _length, _width, _height, _rotation, _world, _space)
 {
+    // movement stuff
+    maxSpeed = 10, maxSteer = 2;
+    speed=0, steer=0;
+    // model
     setModel("ship_speederA.dae");
-
+    // light?
     shipLight.setPosition(this->getModel().getPosition());
-    //shipLight.lookAt();
     shipLight.enable();
 }
 

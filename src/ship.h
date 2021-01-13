@@ -13,10 +13,13 @@ class Ship : public MyObject
 {
 public:
     Ship();
-    explicit Ship(float _x, float _y, float _z, float _length, float _width, float _height, ofQuaternion _rotation, dWorldID _world, dSpaceID _space);
+    explicit Ship(float _x, float _y, float _z,
+                  float _length, float _width, float _height, ofQuaternion _rotation,
+                  dWorldID _world, dSpaceID _space);
 
+    dReal speed,steer;
+    dReal maxSpeed, maxSteer;
     ofLight shipLight;
-
     // we only want to draw the ship's hitbox when debugging
     bool drawObject = false;
 

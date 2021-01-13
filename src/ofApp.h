@@ -15,8 +15,19 @@ public:
     void draw();
     void exit();
 
-    void keyPressed(int key);
-    void keyReleased(int key);
+    /**
+     * @brief We use the keyPressed event to keep track of keys being held down.
+     * We store whether they are 1 or 0 in the keys[] array.
+     * We can query the array in update() to see if we need to act
+     * on keypresses, though can still handle 'q' for quit here.
+     * @param _key the key that's being pressed.
+     */
+    void keyPressed(int _key);
+    /**
+     * @brief When a key is released we set it back to 0 in the keys array.
+     * @param _key the key that was released.
+     */
+    void keyReleased(int _key);
     void mouseMoved(int x, int y );
     void mouseDragged(int x, int y, int button);
     void mousePressed(int x, int y, int button);
@@ -38,11 +49,20 @@ public:
     dSpaceID car_space;
     dGeomID box[1];
     dGeomID ground_box;
-    dReal speed,steer;
 
-    /* The actual implementation of the broadphase collision callback;
-     * see below for how this works with the ODE library. This code
-     * is straight from nearCallback in demo_buggy.cpp.
+    /**
+     * @brief Array to keep track of whether keys are being pressed.
+     * 65536 potential character codes with UTF encoding.
+     */
+    unsigned int keys[65536];
+    /**
+     * @brief Listens for the keys and does what has to be done when the keys are pressed.
+     */
+    void getInput();
+
+    /**
+     * @brief The actual implementation of the broadphase collision callback.
+     * See below for how this works with the ODE library.
      */
     void collide (dGeomID o1, dGeomID o2);
 
