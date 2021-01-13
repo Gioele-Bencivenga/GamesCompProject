@@ -1,6 +1,15 @@
 #include "myObject.h"
 #include "ode/ode.h"
 
+MyObject::MyObject(){
+    setPosition(0, 0, 0);
+
+    objLength = 1, objWidth = 1, objHeight = 1;
+    //objRotation = 0; find way to actually play with rotations
+
+    //setupPhysics(0, 0, 0, );
+}
+
 /**
  * @brief Creates the object with its physical and graphical components according to passed values.
  * @param _x x position where the object will be created
@@ -18,6 +27,15 @@ MyObject::MyObject(float _x, float _y, float _z,
     objLength = _length, objWidth = _width, objHeight = _height;
     objRotation = _rotation;
 
+    setupPhysics(_x, _y, _z, _world, _space);
+
+    setModel("alien.dae");
+
+    // colour randomly assigned
+    objColour.set(ofRandom(1, 254), ofRandom(1, 254), ofRandom(1, 254));
+}
+
+void MyObject::setupPhysics(float _x, float _y, float _z, dWorldID _world, dSpaceID _space){
     // physics objs setup
     objBody = dBodyCreate(_world);
     dBodySetPosition(objBody, _x, _y, _z);
@@ -26,11 +44,6 @@ MyObject::MyObject(float _x, float _y, float _z,
     dBodySetMass(objBody, &objMass);
     objGeom = dCreateBox(_space, objLength, objWidth, objHeight);
     dGeomSetBody(objGeom, objBody);
-
-    setModel("alien.dae");
-
-    // colour randomly assigned
-    objColour.set(ofRandom(1, 254), ofRandom(1, 254), ofRandom(1, 254));
 }
 
 void MyObject::setPosition(float _x, float _y, float _z)

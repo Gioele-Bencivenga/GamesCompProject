@@ -15,6 +15,7 @@
 class MyObject
 {
 public:
+    MyObject();
     MyObject(float _x, float _y, float _z,
              float _length, float _width, float _height,
              ofQuaternion _rotation, dWorldID _world, dSpaceID _space);
@@ -38,6 +39,10 @@ public:
     float objLength = 0.1, objWidth = 0.1, objHeight = 0.1;
 
     /// METHODS
+    /**
+     * @brief Set's the object's physics body and associated geom.
+     */
+    void setupPhysics(float _x, float _y, float _z, dWorldID _world, dSpaceID _space);
     /**
      * @brief Sets the object's position.
      * @param _x the new x position
