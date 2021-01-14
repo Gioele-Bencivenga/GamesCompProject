@@ -16,13 +16,31 @@ public:
     explicit Ship(float _x, float _y, float _z,
                   float _length, float _width, float _height, ofQuaternion _rotation,
                   dWorldID _world, dSpaceID _space);
-
+    /**
+     * @brief The actual speed and rotation speed of the ship.
+     */
     dReal speed,steer;
-    dReal maxSpeed, maxSteer;
+    /**
+     * @brief How quickly the ship changes speed.
+     */
+    dReal acceleration;
+    /**
+     * @brief How quickly the ship changes steer.
+     */
+    dReal steerAcceleration;
+    /**
+     * @brief Maximum amount of speed.
+     */
+    dReal maxSpeed;
+    /**
+     * @brief Maximum amount of steering speed.
+     */
+    dReal maxSteer;
     ofLight shipLight;
     // we only want to draw the ship's hitbox when debugging
-    bool drawObject = false;
+    bool drawObject = true;
 
+    void updateMovement();
     /**
      * @brief The draw() method is overridden since it's used to draw solid objects
      * in the parent class while here we only want to use it for debug purposes.

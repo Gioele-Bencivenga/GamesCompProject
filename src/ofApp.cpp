@@ -56,7 +56,7 @@ void ofApp::setup(){
     cam.setAutoDistance(false);
     cam.setNearClip(0.01);
     cam.setPosition(10,10,10);
-    cam.lookAt({0,0,0},upVector);
+    //cam.lookAt({0,0,0},upVector);
     cam.setUpAxis(upVector);
 
     dAllocateODEDataForThread(dAllocateMaskAll);
@@ -87,9 +87,10 @@ void ofApp::update(){
     if(isPlayerExistent){
         getInput();
         const dReal *b = dBodyGetPosition(player.getBody());
-        player.objModel.setPosition(b[0],b[1],b[2]);
-        cam.setPosition(b[0],b[1]-20,b[2]+10);
+        cam.setPosition(b[0],b[1]-15,b[2]+7);
         cam.setTarget(player.objModel.getPosition());
+        cam.lookAt(player.objModel.getPosition(), ofVec3f(0, 0, 1));
+        cout<<player.objModel.getPosition()<<endl;
     }
 
     dSpaceCollide (space,0,&nearCallback);
@@ -103,23 +104,21 @@ void ofApp::update(){
 void ofApp::getInput(){
     if(player.speed < player.maxSpeed)
         if (keys[OF_KEY_UP])
-            player.speed += 0.025;
+            player.speed += player.acceleration;
 
     if(player.speed > -player.maxSpeed)
         if (keys[OF_KEY_DOWN])
-            player.speed -= 0.025;
+            player.speed -= player.acceleration;
 
     if(player.steer < player.maxSteer)
         if (keys[OF_KEY_RIGHT])
-            player.steer += 0.025;
+            player.steer += player.steerAcceleration;
 
     if(player.steer > -player.maxSteer)
         if (keys[OF_KEY_LEFT])
-            player.steer -= 0.025;
+            player.steer -= player.steerAcceleration;
 
-    // put in a move() method inside Ship? when you figure out how to actually move it that is
-    //dBodySetForce(player.getBody(), 0, player.speed, 0);
-    dBodyAddRelForce(player.getBody(), 0, player.speed, 0);
+    player.updateMovement();
 }
 
 void ofApp::keyPressed(int _key){

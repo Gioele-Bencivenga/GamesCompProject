@@ -7,13 +7,20 @@ Ship::Ship(){
 Ship::Ship(float _x, float _y, float _z, float _length, float _width, float _height, ofQuaternion _rotation, dWorldID _world, dSpaceID _space) : MyObject(_x, _y, _z, _length, _width, _height, _rotation, _world, _space)
 {
     // movement stuff
-    maxSpeed = 10, maxSteer = 2;
-    speed=0, steer=0;
+    maxSpeed = 1, maxSteer = 0.3;
+    speed = 0, steer = 0, acceleration = 0.1, steerAcceleration = 0.1;
     // model
     setModel("ship_speederA.dae");
     // light?
     shipLight.setPosition(this->getModel().getPosition());
     shipLight.enable();
+}
+
+void Ship::updateMovement(){
+    // need to make this work
+    //dBodySetForce(player.getBody(), 0, player.speed, 0);
+    dBodyAddRelForce(getBody(), 0, 0, speed);
+    dBodyAddRelTorque(getBody(), 0, steer, 0);
 }
 
 void Ship::draw()
