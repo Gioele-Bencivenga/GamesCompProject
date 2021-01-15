@@ -80,8 +80,7 @@ void MyObject::draw()
     ofVec3f rotationAngle;
     objRotation.getRotate(rotationAmount, rotationAngle);
 
-    /* We can draw a transparent white box where the ODE object is, to
-     * make sure that our model is being drawn approximately correctly */
+    // we draw the object as a rectangular box
     if(drawObject) {
         ofSetColor(objColour, 256);
         /* Save the current state of the graphics transform stack: */
@@ -94,7 +93,7 @@ void MyObject::draw()
         ofRotateDeg(rotationAmount, rotationAngle.x, rotationAngle.y, rotationAngle.z);
 
         /* Draw the box */
-        ofDrawBox(objWidth,objLength,objHeight);
+        ofDrawBox(objLength, objWidth, objHeight);
 
         /* Restore the graphics transform stack: */
         ofPopMatrix();

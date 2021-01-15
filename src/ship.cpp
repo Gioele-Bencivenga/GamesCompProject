@@ -7,8 +7,8 @@ Ship::Ship(){
 Ship::Ship(float _x, float _y, float _z, float _length, float _width, float _height, ofQuaternion _rotation, dWorldID _world, dSpaceID _space) : MyObject(_x, _y, _z, _length, _width, _height, _rotation, _world, _space)
 {
     // movement stuff
-    maxSpeed = 1, maxSteer = 0.3;
-    speed = 0, steer = 0, acceleration = 0.1, steerAcceleration = 0.1;
+    maxSpeed = 1, maxSteer = 0.2;
+    speed = 0, steer = 0;
     // model
     setModel("ship_speederA.dae");
     // light?
@@ -16,11 +16,90 @@ Ship::Ship(float _x, float _y, float _z, float _length, float _width, float _hei
     shipLight.enable();
 }
 
-void Ship::updateMovement(){
-    // need to make this work
-    //dBodySetForce(player.getBody(), 0, player.speed, 0);
-    dBodyAddRelForce(getBody(), 0, 0, speed);
-    dBodyAddRelTorque(getBody(), 0, steer, 0);
+void Ship::updateMovement()
+{
+    currentVelocity = dBodyGetLinearVel(objBody);
+    currentAngularVelocity = dBodyGetAngularVel(objBody);
+    currentRotation = dBodyGetRotation(objBody);
+
+    cout<< currentRotation[1]<<endl;
+
+    /// UPWARDS
+    if(lift == true)
+    {
+        if(currentVelocity[2] < 1)
+        {
+            dBodyAddForce(objBody, 0, 0, 0.8);
+        }
+
+        if(currentRotation[1] > -0.2)
+        {
+            if(currentAngularVelocity[1] < 0)
+            {
+                dBodyAddTorque(objBody, 0, 0.01, 0);
+            }
+            else if (currentAngularVelocity[1] > 0)
+            {
+                dBodyAddTorque(objBody, 0, -0.01, 0);
+            }
+        }
+        else if(currentRotation[1] < -0.2)
+        {
+            if(currentAngularVelocity[1] < 0)
+            {
+                dBodyAddTorque(objBody, 0, 0.01, 0);
+            }
+            else if (currentAngularVelocity[1] > 0)
+            {
+                dBodyAddTorque(objBody, 0, -0.01, 0);
+            }
+        }
+    }
+
+    /// FORWARD/BACKWARDS
+    if(speed == maxSpeed)
+    {
+        if(currentVelocity[1] < 5)
+        {
+            dBodyAddRelForce(objBody, 0, maxSpeed, 0);
+        }
+    }
+    else if(speed == -maxSpeed)
+    {
+        if(currentVelocity[1] > -5)
+        {
+            dBodyAddRelForce(objBody, 0, -maxSpeed, 0);
+        }
+    }
+    else
+    {
+    }
+
+    ///LEFT/RIGHT
+    if(steer == maxSteer)
+    {
+        if(currentAngularVelocity[2] < 2)
+        {
+            dBodyAddTorque(objBody, 0, -0.001, maxSteer);
+        }
+    }
+    else if(steer == -maxSteer)
+    {
+        if(currentAngularVelocity[2] > -2){
+            dBodyAddTorque(objBody, 0, -0.001, -maxSteer);
+        }
+    }
+    else // if we are not steering
+    {
+        if(currentAngularVelocity[2] > 0) // the ship slows down its rotation
+        {
+            dBodyAddTorque(objBody, 0, 0, -0.01);
+        }
+        else if (currentAngularVelocity[2] < 0)
+        {
+            dBodyAddTorque(objBody, 0, 0, +0.01);
+        }
+    }
 }
 
 void Ship::draw()

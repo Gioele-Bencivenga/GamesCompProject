@@ -16,18 +16,17 @@ public:
     explicit Ship(float _x, float _y, float _z,
                   float _length, float _width, float _height, ofQuaternion _rotation,
                   dWorldID _world, dSpaceID _space);
+    const float* currentVelocity;
+    const float* currentAngularVelocity;
+    const float* currentRotation;
+    /**
+     * @brief Are we trying to get lift?
+     */
+    bool lift;
     /**
      * @brief The actual speed and rotation speed of the ship.
      */
     dReal speed,steer;
-    /**
-     * @brief How quickly the ship changes speed.
-     */
-    dReal acceleration;
-    /**
-     * @brief How quickly the ship changes steer.
-     */
-    dReal steerAcceleration;
     /**
      * @brief Maximum amount of speed.
      */

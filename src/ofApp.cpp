@@ -69,7 +69,7 @@ void ofApp::setup(){
     // setup input keys
     for(unsigned int i=0; i<65536; i++) keys[i] = 0;
     // create player
-    player = Ship(0, 0, 30, 0.8, 1.2, 0.3, *new ofQuaternion(0, 0, 0, 0), world, space);
+    player = Ship(0, 0, 15, 1.2, 1.2, 0.35, *new ofQuaternion(0, 0, 0, 0), world, space);
     myObjects.push_back(&player);
     isPlayerExistent = true;
 
@@ -88,13 +88,12 @@ void ofApp::update(){
         getInput();
         const dReal *b = dBodyGetPosition(player.getBody());
         cam.setPosition(b[0],b[1]-15,b[2]+7);
-        cam.setTarget(player.objModel.getPosition());
-        cam.lookAt(player.objModel.getPosition(), ofVec3f(0, 0, 1));
-        cout<<player.objModel.getPosition()<<endl;
+        //cam.setTarget(player.objModel.getPosition());
+        cam.lookAt(glm::vec3(b[0], b[1], b[2]), ofVec3f(0, 0, 1));
     }
 
     dSpaceCollide (space,0,&nearCallback);
-    dWorldStep (world,0.04);
+    dWorldStep (world, 0.1);
 
     // remove all contact joints
     dJointGroupEmpty (contactgroup);
@@ -102,36 +101,47 @@ void ofApp::update(){
 }
 
 void ofApp::getInput(){
+    player.speed = 0;
+    player.steer = 0;
+
     if(player.speed < player.maxSpeed)
-        if (keys[OF_KEY_UP])
-            player.speed += player.acceleration;
+        if (keys[87] || keys[119] || keys[OF_KEY_UP]) // W/w/UP
+            player.speed = player.maxSpeed;
 
     if(player.speed > -player.maxSpeed)
-        if (keys[OF_KEY_DOWN])
-            player.speed -= player.acceleration;
+        if (keys[83] || keys[115] || keys[OF_KEY_DOWN]) // S/s/DOWN
+            player.speed = -player.maxSpeed;
 
     if(player.steer < player.maxSteer)
-        if (keys[OF_KEY_RIGHT])
-            player.steer += player.steerAcceleration;
+        if (keys[68] || keys[100] || keys[OF_KEY_RIGHT]) // D/d/RIGHT
+            player.steer = -player.maxSteer;
 
     if(player.steer > -player.maxSteer)
-        if (keys[OF_KEY_LEFT])
-            player.steer -= player.steerAcceleration;
+        if (keys[65] || keys[97] || keys[OF_KEY_LEFT]) // A/a/LEFT
+            player.steer = player.maxSteer;
+
+    if(keys[32]){ // SPACE
+        player.lift = true;
+    }else{
+        player.lift = false;
+    }
+
+    std::cout << "Lift is " << player.lift << std::endl;
 
     player.updateMovement();
 }
 
 void ofApp::keyPressed(int _key){
-//  There is an OF_KEY_X macro for the keys, but you can also
-//  detect the numeric code and use that if you want to:
-    std::cout << "Keycode " << _key << "was pressed." << std::endl;
+    //  There is an OF_KEY_X macro for the keys, but you can also
+    //  detect the numeric code and use that if you want to:
+    //std::cout << "Keycode " << _key << "was pressed." << std::endl;
 
     keys[_key] = 1;
 
     switch(_key) {
     case ' ':
-      player.speed = 0;
-      player.steer = 0;
+        player.speed = 0;
+        player.steer = 0;
         break;
     case 'q':
         ofExit();
@@ -140,7 +150,6 @@ void ofApp::keyPressed(int _key){
 }
 
 void ofApp::keyReleased(int _key){
-
     keys[_key] = 0;
 }
 
@@ -255,11 +264,11 @@ void ofApp::drawBox(const dReal*pos_ode, const dQuaternion rot_ode, const dReal*
 
 void ofApp::collide(dGeomID o1, dGeomID o2)
 {
-    int g1 = (o1 == ground || o1 == ground_box);
-    int g2 = (o2 == ground || o2 == ground_box);
-    if (!(g1 ^ g2)) return; // if we are not colliding with anything we return
+    //int g1 = (o1 == ground || o1 == ground_box);
+    //int g2 = (o2 == ground || o2 == ground_box);
+    //if (!(g1 ^ g2)) return; // if we are not colliding with anything we return
 
-    const int N = 10;
+    const int N = 15;
     dContact contact[N];
     int i,n;
     n = dCollide (o1,o2,N,&contact[0].geom,sizeof(dContact));
@@ -267,7 +276,7 @@ void ofApp::collide(dGeomID o1, dGeomID o2)
         for (i=0; i<n; i++) {
             contact[i].surface.mode = dContactSlip1 | dContactSlip2 |
                     dContactSoftERP | dContactSoftCFM | dContactApprox1;
-            contact[i].surface.mu = dInfinity;
+            contact[i].surface.mu = 2;
             contact[i].surface.slip1 = 0.1;
             contact[i].surface.slip2 = 0.1;
             contact[i].surface.soft_erp = 0.5;
