@@ -22,7 +22,7 @@ void Ship::updateMovement()
     currentAngularVelocity = dBodyGetAngularVel(objBody);
     currentRotation = dBodyGetRotation(objBody);
 
-    cout<< currentRotation[1]<<endl;
+    cout << currentRotation[6] << endl;
 
     /// UPWARDS
     if(lift == true)
@@ -30,29 +30,6 @@ void Ship::updateMovement()
         if(currentVelocity[2] < 1)
         {
             dBodyAddForce(objBody, 0, 0, 0.8);
-        }
-
-        if(currentRotation[1] > -0.2)
-        {
-            if(currentAngularVelocity[1] < 0)
-            {
-                dBodyAddTorque(objBody, 0, 0.01, 0);
-            }
-            else if (currentAngularVelocity[1] > 0)
-            {
-                dBodyAddTorque(objBody, 0, -0.01, 0);
-            }
-        }
-        else if(currentRotation[1] < -0.2)
-        {
-            if(currentAngularVelocity[1] < 0)
-            {
-                dBodyAddTorque(objBody, 0, 0.01, 0);
-            }
-            else if (currentAngularVelocity[1] > 0)
-            {
-                dBodyAddTorque(objBody, 0, -0.01, 0);
-            }
         }
     }
 
@@ -75,29 +52,90 @@ void Ship::updateMovement()
     {
     }
 
-    ///LEFT/RIGHT
-    if(steer == maxSteer)
+    /// LEFT/RIGHT
+    if(steer == maxSteer) // steering left
     {
-        if(currentAngularVelocity[2] < 2)
+        if(currentAngularVelocity[2] < 1.5) // limit velocity
         {
-            dBodyAddTorque(objBody, 0, -0.001, maxSteer);
+            dBodyAddRelTorque(objBody, -0.001, 0, 0);
+            //dBodyAddTorque(objBody, 0, -0, maxSteer);
         }
     }
-    else if(steer == -maxSteer)
+    else if(steer == -maxSteer) // steering right
     {
-        if(currentAngularVelocity[2] > -2){
-            dBodyAddTorque(objBody, 0, -0.001, -maxSteer);
+        if(currentAngularVelocity[2] > -1.5) // limit
+        {
+            dBodyAddRelTorque(objBody, 0.001, 0, 0);
+            //dBodyAddTorque(objBody, 0, -0, -maxSteer);
         }
     }
     else // if we are not steering
     {
-        if(currentAngularVelocity[2] > 0) // the ship slows down its rotation
+        // the ship slows down its rotation
+        if(currentAngularVelocity[2] > 0) // turning right?
         {
-            dBodyAddTorque(objBody, 0, 0, -0.01);
+            //dBodyAddTorque(objBody, 0, 0, -0.01); // contrast force
         }
-        else if (currentAngularVelocity[2] < 0)
+        else if (currentAngularVelocity[2] < 0) // turning left?
         {
-            dBodyAddTorque(objBody, 0, 0, +0.01);
+            //dBodyAddTorque(objBody, 0, 0, 0.01); // contrast force
+        }
+    }
+
+    /// AUTO ROTATION
+    if(currentRotation[2] > 0.1)
+    {
+        if(currentAngularVelocity[1] < 0.6)
+        {
+            dBodyAddRelTorque(objBody, 0, -0.05, 0);
+        }
+        else if(currentAngularVelocity[1] > -0.6)
+        {
+            dBodyAddRelTorque(objBody, 0, 0.05, 0);
+        }
+    }
+    else if(currentRotation[2] < -0.1)
+    {
+        if(currentAngularVelocity[1] < 0.6)
+        {
+            dBodyAddRelTorque(objBody, 0, 0.05, 0);
+        }
+        else if(currentAngularVelocity[1] > -0.6)
+        {
+            dBodyAddRelTorque(objBody, 0, -0.05, 0);
+        }
+    }
+    // front/back rotation
+    if(currentRotation[5] < 0.6) // tilted too high up
+    {
+        //dBodyAddRelTorque(objBody, -0.1, 0, 0);
+    }
+    else if(currentRotation[5] > 0.95)
+    {
+
+    }
+
+    /// ROLL DAMPENER
+    if(currentAngularVelocity[1] < 0) // rolling left
+    {
+        if(currentRotation[2] < 0) // leaning left
+        {
+            dBodyAddRelTorque(objBody, 0, 0.05, 0); // contrast the rolling left
+        }
+        else if(currentRotation[2] > 0) // leaning right
+        {
+            // do nothing
+        }
+    }
+    else if(currentAngularVelocity[1] > 0) // rolling right
+    {
+        if(currentRotation[2] > 0) // leaning right
+        {
+            dBodyAddRelTorque(objBody, 0, -0.05, 0); // contrast the rolling right
+        }
+        else if(currentRotation[2] < 0) // leaning left
+        {
+            // do nothing
         }
     }
 }

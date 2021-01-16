@@ -69,12 +69,12 @@ void ofApp::setup(){
     // setup input keys
     for(unsigned int i=0; i<65536; i++) keys[i] = 0;
     // create player
-    player = Ship(0, 0, 15, 1.2, 1.2, 0.35, *new ofQuaternion(0, 0, 0, 0), world, space);
+    player = Ship(0, 0, 5, 1.2, 1.2, 0.35, *new ofQuaternion(0, 0, 0, 0), world, space);
     myObjects.push_back(&player);
     isPlayerExistent = true;
 
     // create some objects
-    for(unsigned int p=0; p<60; p++) {
+    for(unsigned int p=0; p<20; p++) {
         myObjects.push_back(new MyObject(ofRandom(-30, 30), ofRandom(-30, 30), ofRandom(5, 40),
                                          ofRandom(0.1, 5), ofRandom(0.1, 5), ofRandom(0.1, 5),
                                          *new ofQuaternion(ofRandom(0, 50), 0, 0, 0), world, space));
@@ -125,8 +125,6 @@ void ofApp::getInput(){
     }else{
         player.lift = false;
     }
-
-    std::cout << "Lift is " << player.lift << std::endl;
 
     player.updateMovement();
 }
