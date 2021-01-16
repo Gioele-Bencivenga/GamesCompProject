@@ -61,7 +61,7 @@ void MyObject::setModel(string _modelName){
     double scale = 1.0 / objModel.getNormalizedScale();
     objModel.setScale(scale, scale, scale);
     objModel.setRotation(0, 90.0, 1, 0, 0);
-    objModel.setPosition(objModel.getPosition().x, objModel.getPosition().y + 0.35, objModel.getPosition().z - 0.3);
+    objModel.setPosition(objModel.getPosition().x, objModel.getPosition().y + 0.35, objModel.getPosition().z);
 }
 
 void MyObject::draw()

@@ -60,6 +60,8 @@ public:
      */
     void getInput();
 
+    //void placeBlock(int _x, int _y, int _z, );
+
     /**
      * @brief The actual implementation of the broadphase collision callback.
      * See below for how this works with the ODE library.
@@ -68,6 +70,9 @@ public:
 
     void drawBox(const dReal*pos_ode, const dQuaternion rot_ode, const dReal*sides_ode);
     void drawCyl(const dReal*pos_ode, const dQuaternion rot_ode, dReal len, dReal rad);
+
+    /// FONTS
+    ofTrueTypeFont myFont;
 
     /// LIGHTS
     ofLight m_light1;
@@ -79,6 +84,9 @@ public:
 
     ///OBJECTS
     std::vector<MyObject*> myObjects;
+
+    /// TUTORIAL
+    bool wPressed = false, aPressed = false, sPressed = false, dPressed = false;
 };
 
 /* ODE requires a global function to use as the collision callback; this

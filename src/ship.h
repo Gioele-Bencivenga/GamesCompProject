@@ -39,6 +39,8 @@ public:
     // we only want to draw the ship's hitbox when debugging
     bool drawObject = true;
 
+    void alignToZAxis();
+
     void updateMovement();
     /**
      * @brief The draw() method is overridden since it's used to draw solid objects

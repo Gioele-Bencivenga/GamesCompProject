@@ -7,22 +7,47 @@ Ship::Ship(){
 Ship::Ship(float _x, float _y, float _z, float _length, float _width, float _height, ofQuaternion _rotation, dWorldID _world, dSpaceID _space) : MyObject(_x, _y, _z, _length, _width, _height, _rotation, _world, _space)
 {
     // movement stuff
-    maxSpeed = 1, maxSteer = 0.2;
+    maxSpeed = 1, maxSteer = 0.3;
     speed = 0, steer = 0;
     // model
     setModel("ship_speederA.dae");
     // light?
     shipLight.setPosition(this->getModel().getPosition());
     shipLight.enable();
+
+    dBodySetMaxAngularSpeed(objBody, 0.6);
+    dBodySetDamping(objBody, 0.03, 0.15);
+}
+
+// found on http://ode.org/wikiold/htmlfile156.html
+void Ship::alignToZAxis( )
+{
+    dBodyID bodyID = objBody;
+    const dReal *rot = dBodyGetAngularVel( bodyID );
+    const dReal *quat_ptr;
+    dReal quat[4], quat_len;
+    quat_ptr = dBodyGetQuaternion( bodyID );
+    quat[0] = quat_ptr[0];
+    quat[1] = 0;
+    quat[2] = 0;
+    quat[3] = quat_ptr[3];
+    quat_len = sqrt( quat[0] * quat[0] + quat[3] * quat[3] );
+    quat[0] /= quat_len;
+    quat[3] /= quat_len;
+    dBodySetQuaternion( bodyID, quat );
+    dBodySetAngularVel( bodyID, 0, 0, rot[2] );
 }
 
 void Ship::updateMovement()
 {
+    alignToZAxis();
+
     currentVelocity = dBodyGetLinearVel(objBody);
     currentAngularVelocity = dBodyGetAngularVel(objBody);
     currentRotation = dBodyGetRotation(objBody);
 
-    cout << currentRotation[6] << endl;
+    const float* yPos = dBodyGetPosition(objBody);
+    cout << yPos[0] << endl;
 
     /// UPWARDS
     if(lift == true)
@@ -36,17 +61,11 @@ void Ship::updateMovement()
     /// FORWARD/BACKWARDS
     if(speed == maxSpeed)
     {
-        if(currentVelocity[1] < 5)
-        {
-            dBodyAddRelForce(objBody, 0, maxSpeed, 0);
-        }
+        dBodyAddRelForce(objBody, 0, maxSpeed, 0);
     }
     else if(speed == -maxSpeed)
     {
-        if(currentVelocity[1] > -5)
-        {
-            dBodyAddRelForce(objBody, 0, -maxSpeed, 0);
-        }
+        dBodyAddRelForce(objBody, 0, -maxSpeed, 0);
     }
     else
     {
@@ -55,19 +74,15 @@ void Ship::updateMovement()
     /// LEFT/RIGHT
     if(steer == maxSteer) // steering left
     {
-        if(currentAngularVelocity[2] < 1.5) // limit velocity
-        {
-            dBodyAddRelTorque(objBody, -0.001, 0, 0);
-            //dBodyAddTorque(objBody, 0, -0, maxSteer);
-        }
+        //dBodySetRotation(objBody, currentRotation);
+
+        //dBodyAddRelTorque(objBody, -0.002, 0, 0);
+            dBodyAddRelTorque(objBody, 0, 0.1, maxSteer);
     }
     else if(steer == -maxSteer) // steering right
     {
-        if(currentAngularVelocity[2] > -1.5) // limit
-        {
-            dBodyAddRelTorque(objBody, 0.001, 0, 0);
-            //dBodyAddTorque(objBody, 0, -0, -maxSteer);
-        }
+        //dBodyAddRelTorque(objBody, 0.002, 0, 0);
+            dBodyAddRelTorque(objBody, 0, 0.1, -maxSteer);
     }
     else // if we are not steering
     {
@@ -79,63 +94,6 @@ void Ship::updateMovement()
         else if (currentAngularVelocity[2] < 0) // turning left?
         {
             //dBodyAddTorque(objBody, 0, 0, 0.01); // contrast force
-        }
-    }
-
-    /// AUTO ROTATION
-    if(currentRotation[2] > 0.1)
-    {
-        if(currentAngularVelocity[1] < 0.6)
-        {
-            dBodyAddRelTorque(objBody, 0, -0.05, 0);
-        }
-        else if(currentAngularVelocity[1] > -0.6)
-        {
-            dBodyAddRelTorque(objBody, 0, 0.05, 0);
-        }
-    }
-    else if(currentRotation[2] < -0.1)
-    {
-        if(currentAngularVelocity[1] < 0.6)
-        {
-            dBodyAddRelTorque(objBody, 0, 0.05, 0);
-        }
-        else if(currentAngularVelocity[1] > -0.6)
-        {
-            dBodyAddRelTorque(objBody, 0, -0.05, 0);
-        }
-    }
-    // front/back rotation
-    if(currentRotation[5] < 0.6) // tilted too high up
-    {
-        //dBodyAddRelTorque(objBody, -0.1, 0, 0);
-    }
-    else if(currentRotation[5] > 0.95)
-    {
-
-    }
-
-    /// ROLL DAMPENER
-    if(currentAngularVelocity[1] < 0) // rolling left
-    {
-        if(currentRotation[2] < 0) // leaning left
-        {
-            dBodyAddRelTorque(objBody, 0, 0.05, 0); // contrast the rolling left
-        }
-        else if(currentRotation[2] > 0) // leaning right
-        {
-            // do nothing
-        }
-    }
-    else if(currentAngularVelocity[1] > 0) // rolling right
-    {
-        if(currentRotation[2] > 0) // leaning right
-        {
-            dBodyAddRelTorque(objBody, 0, -0.05, 0); // contrast the rolling right
-        }
-        else if(currentRotation[2] < 0) // leaning left
-        {
-            // do nothing
         }
     }
 }

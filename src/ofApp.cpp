@@ -61,28 +61,49 @@ void ofApp::setup(){
 
     dAllocateODEDataForThread(dAllocateMaskAll);
 
+    // setup font
+    myFont.loadFont(OF_TTF_SANS, 64);
+
     // light
-    m_light1.setPosition(0,0,20);
+    m_light1.setPosition(0,0,2000);
     //m_light1.lookAt(glm::vec3(0,0,0));
     m_light1.enable();
 
     // setup input keys
     for(unsigned int i=0; i<65536; i++) keys[i] = 0;
     // create player
-    player = Ship(0, 0, 5, 1.2, 1.2, 0.35, *new ofQuaternion(0, 0, 0, 0), world, space);
+    player = Ship(0, 0, 100, 1.2, 0.9, 0.4, *new ofQuaternion(0, 0, 0, 0), world, space);
     myObjects.push_back(&player);
     isPlayerExistent = true;
 
-    // create some objects
-    for(unsigned int p=0; p<20; p++) {
-        myObjects.push_back(new MyObject(ofRandom(-30, 30), ofRandom(-30, 30), ofRandom(5, 40),
-                                         ofRandom(0.1, 5), ofRandom(0.1, 5), ofRandom(0.1, 5),
-                                         *new ofQuaternion(ofRandom(0, 50), 0, 0, 0), world, space));
+    const dReal* playerPos = dBodyGetPosition(player.objBody);
+
+    MyObject* startBlock = new MyObject(0, 0, playerPos[2] - 5,
+            100, 150, 10,
+            *new ofQuaternion(0, 0, 0, 0), world, space);
+    dBodySetKinematic(startBlock->objBody);
+    myObjects.push_back(startBlock);
+
+    // path creation algorithm
+    for(unsigned int i=0; i<10; i++)
+    {
+        MyObject* prevBlock = myObjects[i+1]; // get the last placed block
+        const dReal* prevBlockPos = dBodyGetPosition(prevBlock->objBody); // get its position
+        // create new block in position relative to previous
+        MyObject* blockToAdd = new MyObject(ofRandom(-20, 20), prevBlockPos[1] + prevBlock->objWidth + 10, prevBlockPos[2] + prevBlock->objHeight + ofRandom(0, 10),
+                ofRandom(50, 150), ofRandom(50, 150), ofRandom(5, 20),
+                *new ofQuaternion(0, 0, 0, 0), world, space);
+        dBodyAddRelTorque(blockToAdd->objBody, 0.5, 0, 0);
+        dBodySetKinematic(blockToAdd->objBody); // set stationary
+        myObjects.push_back(blockToAdd); // add to group
     }
 }
 
+//void ofApp::placeBlock()
+
 //--------------------------------------------------------------
-void ofApp::update(){
+void ofApp::update()
+{
 
     if(isPlayerExistent){
         getInput();
@@ -93,7 +114,7 @@ void ofApp::update(){
     }
 
     dSpaceCollide (space,0,&nearCallback);
-    dWorldStep (world, 0.1);
+    dWorldStep (world, 0.15);
 
     // remove all contact joints
     dJointGroupEmpty (contactgroup);
@@ -154,7 +175,7 @@ void ofApp::keyReleased(int _key){
 void ofApp::draw(){
 
     // draw the scene
-    ofBackground(20);
+    ofBackground(179, 242, 255);
     cam.begin();
 
     ofEnableDepthTest();
@@ -162,30 +183,34 @@ void ofApp::draw(){
     ofPushMatrix();
 
     ofSetColor(ofColor::lightGrey);
-
-    ofDrawGrid(0.3f,250, false, false, false, true);
-
-    ofDrawAxis(10);
-
-    // chassis
-    ofSetColor(ofColor::yellow);
-    const dReal sides[3] = {LENGTH,WIDTH,HEIGHT};
-    const dReal* pos_ode = dBodyGetPosition(body[0]);
-    const dReal* rot_ode = dBodyGetQuaternion(body[0]);
-    drawBox(pos_ode, rot_ode, sides);
-
-    // ground box
-    ofSetColor(ofColor::blue);
-    dVector3 ss; dQuaternion r;
-    dGeomBoxGetLengths (ground_box,ss);
-    dGeomGetQuaternion(ground_box,r);
-    drawBox(dGeomGetPosition(ground_box),r,ss);
+    ofDrawGrid(1.5f, 500, false, false, false, false);
 
     for(auto x: myObjects ) x->draw();
 
     ofDisableDepthTest();
     cam.end();
 
+    ofPushMatrix();
+
+    if(wPressed == false){
+        ofSetColor(ofColor::black);
+        myFont.drawString("Press W or up to go forward", (ofGetWindowWidth()/2) - 510, 100);
+    }
+
+    if(aPressed == false){
+        ofSetColor(ofColor::black);
+        myFont.drawString("Press A or left to turn left", 20, 200);
+    }
+
+    if(sPressed == false){
+        ofSetColor(ofColor::black);
+        myFont.drawString("Press S or down to go backwards", (ofGetWindowWidth()/2) - 510, ofGetWindowHeight() - 100);
+    }
+
+    if(dPressed == false){
+        ofSetColor(ofColor::black);
+        myFont.drawString("Press D or right to go forward", 20, 400);
+    }
     ofPopMatrix();
 }
 
@@ -274,7 +299,7 @@ void ofApp::collide(dGeomID o1, dGeomID o2)
         for (i=0; i<n; i++) {
             contact[i].surface.mode = dContactSlip1 | dContactSlip2 |
                     dContactSoftERP | dContactSoftCFM | dContactApprox1;
-            contact[i].surface.mu = 2;
+            contact[i].surface.mu = 0.5;
             contact[i].surface.slip1 = 0.1;
             contact[i].surface.slip2 = 0.1;
             contact[i].surface.soft_erp = 0.5;
