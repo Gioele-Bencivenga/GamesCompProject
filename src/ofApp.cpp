@@ -62,7 +62,7 @@ void ofApp::setup(){
     dAllocateODEDataForThread(dAllocateMaskAll);
 
     // setup font
-    myFont.loadFont(OF_TTF_SANS, 64);
+    myFont.load(OF_TTF_SANS, 64, true, true, true);
 
     // light
     m_light1.setPosition(0,0,2000);
@@ -93,13 +93,16 @@ void ofApp::setup(){
         MyObject* blockToAdd = new MyObject(ofRandom(-20, 20), prevBlockPos[1] + prevBlock->objWidth + 10, prevBlockPos[2] + prevBlock->objHeight + ofRandom(0, 10),
                 ofRandom(50, 150), ofRandom(50, 150), ofRandom(5, 20),
                 *new ofQuaternion(0, 0, 0, 0), world, space);
-        dBodyAddRelTorque(blockToAdd->objBody, 0.5, 0, 0);
+
+        dMatrix3 R;
+        dRFromAxisAndAngle (R,0,1,0,-0.15);
+        dBodySetRotation(blockToAdd->objBody, R);
+
+        //dBodyAddRelTorque(blockToAdd->objBody, 0.5, 0, 0);
         dBodySetKinematic(blockToAdd->objBody); // set stationary
         myObjects.push_back(blockToAdd); // add to group
     }
 }
-
-//void ofApp::placeBlock()
 
 //--------------------------------------------------------------
 void ofApp::update()
@@ -194,22 +197,22 @@ void ofApp::draw(){
 
     if(wPressed == false){
         ofSetColor(ofColor::black);
-        myFont.drawString("Press W or up to go forward", (ofGetWindowWidth()/2) - 510, 100);
+        myFont.drawString("W/up to go forward", (ofGetWindowWidth()/2) - 400, 100);
     }
 
     if(aPressed == false){
         ofSetColor(ofColor::black);
-        myFont.drawString("Press A or left to turn left", 20, 200);
+        myFont.drawString("A/left to turn left", 20, ofGetWindowHeight()/2 - 10);
     }
 
     if(sPressed == false){
         ofSetColor(ofColor::black);
-        myFont.drawString("Press S or down to go backwards", (ofGetWindowWidth()/2) - 510, ofGetWindowHeight() - 100);
+        myFont.drawString("S/down to go backwards", (ofGetWindowWidth()/2) - 400, ofGetWindowHeight() - 150);
     }
 
     if(dPressed == false){
         ofSetColor(ofColor::black);
-        myFont.drawString("Press D or right to go forward", 20, 400);
+        myFont.drawString("D/right to turn right", ofGetWindowWidth() - 800, ofGetWindowHeight()/2 - 10);
     }
     ofPopMatrix();
 }
