@@ -24,6 +24,14 @@ public:
      */
     bool lift;
     /**
+     * @brief amount of lift the ship has.
+     */
+    float liftAmount;
+    /**
+     * @brief maximum amount of lift the ship can have.
+     */
+    float maxLiftAmount;
+    /**
      * @brief The actual speed and rotation speed of the ship.
      */
     dReal speed,steer;
@@ -35,6 +43,13 @@ public:
      * @brief Maximum amount of steering speed.
      */
     dReal maxSteer;
+    /**
+     * @brief engine sound player.
+     */
+    ofSoundPlayer shipEngineSound;
+    ofSoundPlayer emptyEngineSound; // empty lift
+    ofSoundPlayer rechargeSound; // lift recharge
+    // light?
     ofLight shipLight;
     // we only want to draw the ship's hitbox when debugging
     bool drawObject = true;

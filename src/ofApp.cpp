@@ -26,8 +26,7 @@ void ofApp::setup(){
     world = dWorldCreate();
     space = dHashSpaceCreate(0);
     contactgroup = dJointGroupCreate(0);
-    dWorldSetGravity(world,0,0,-0.5);
-    ground = dCreatePlane (space,0,0,1,0);
+    dWorldSetGravity(world,0,0,-1.77);
 
     // chassis body
     body[0] = dBodyCreate (world);
@@ -64,41 +63,54 @@ void ofApp::setup(){
     // setup font
     myFont.load(OF_TTF_SANS, 64, true, true, true);
 
+    // setup input keys
+    for(unsigned int i=0; i<65536; i++) keys[i] = 0;
+
+    // player
+    player = Ship(0, 0, 0, 1.3, 0.7, 0.3, *new ofQuaternion(0, 0, 0, 0), world, space);
+    myObjects.push_back(&player);
+    isPlayerExistent = true;
+    currPlayerPos = dBodyGetPosition(player.objBody);
+
     // light
-    m_light1.setPosition(0,0,2000);
+    m_light1.setPosition(0,currPlayerPos[1] + 100, currPlayerPos[2] + 100);
     //m_light1.lookAt(glm::vec3(0,0,0));
     m_light1.enable();
 
-    // setup input keys
-    for(unsigned int i=0; i<65536; i++) keys[i] = 0;
-    // create player
-    player = Ship(0, 0, 100, 1.2, 0.9, 0.4, *new ofQuaternion(0, 0, 0, 0), world, space);
-    myObjects.push_back(&player);
-    isPlayerExistent = true;
+    // sounds
+    musicPlayer.load("music.mp3");
+    musicPlayer.setLoop(true);
+    musicPlayer.setVolume(0.2);
+    musicPlayer.play();
+    deathSound.load("sounds_death.wav");
+    deathSound.setVolume(1);
+    //winSound.load("sounds_win.wav");
+    //winSound.setVolume(0.8);
 
-    const dReal* playerPos = dBodyGetPosition(player.objBody);
-
-    MyObject* startBlock = new MyObject(0, 0, playerPos[2] - 5,
-            100, 150, 10,
+    // start block
+    MyObject* startBlock = new MyObject(currPlayerPos[0], currPlayerPos[1], currPlayerPos[2] - 5,
+            150, 200, 50,
             *new ofQuaternion(0, 0, 0, 0), world, space);
+    dRFromAxisAndAngle(R, 1, 0, 0, -0.1);
+    dBodySetRotation(startBlock->objBody, R);
     dBodySetKinematic(startBlock->objBody);
     myObjects.push_back(startBlock);
 
+    playerOverBlock = 0;
+
     // path creation algorithm
-    for(unsigned int i=0; i<10; i++)
+    for(unsigned int i=0; i<80; i++)
     {
         MyObject* prevBlock = myObjects[i+1]; // get the last placed block
         const dReal* prevBlockPos = dBodyGetPosition(prevBlock->objBody); // get its position
         // create new block in position relative to previous
-        MyObject* blockToAdd = new MyObject(ofRandom(-20, 20), prevBlockPos[1] + prevBlock->objWidth + 10, prevBlockPos[2] + prevBlock->objHeight + ofRandom(0, 10),
-                ofRandom(50, 150), ofRandom(50, 150), ofRandom(5, 20),
+        MyObject* blockToAdd = new MyObject(prevBlockPos[0] + ofRandom(-80, 80), prevBlockPos[1] + prevBlock->objWidth, prevBlockPos[2] - ofRandom(-40, 150),
+                ofRandom(2.5, 120), ofRandom(2.5, 120), ofRandom(2.5, 50),
                 *new ofQuaternion(0, 0, 0, 0), world, space);
 
-        dMatrix3 R;
-        dRFromAxisAndAngle (R,0,1,0,-0.15);
+        float rot = i/50;
+        dRFromAxisAndAngle(R, 1, 1, 0, ofRandom(-rot, rot));
         dBodySetRotation(blockToAdd->objBody, R);
-
-        //dBodyAddRelTorque(blockToAdd->objBody, 0.5, 0, 0);
         dBodySetKinematic(blockToAdd->objBody); // set stationary
         myObjects.push_back(blockToAdd); // add to group
     }
@@ -107,21 +119,50 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update()
 {
-
     if(isPlayerExistent){
         getInput();
-        const dReal *b = dBodyGetPosition(player.getBody());
-        cam.setPosition(b[0],b[1]-15,b[2]+7);
-        //cam.setTarget(player.objModel.getPosition());
-        cam.lookAt(glm::vec3(b[0], b[1], b[2]), ofVec3f(0, 0, 1));
+
+        currPlayerPos = dBodyGetPosition(player.objBody);
+        cam.setPosition(currPlayerPos[0], currPlayerPos[1]-13, currPlayerPos[2]+9.5);
+        cam.lookAt(glm::vec3(currPlayerPos[0], currPlayerPos[1], currPlayerPos[2]), ofVec3f(0, 0, 1));
+
+        for(unsigned int i=0; i < myObjects.size(); i++)
+        {
+            const float* currObjPos = dBodyGetPosition(myObjects[i]->objBody);
+
+            // keep track of which block the player reached
+            if(currPlayerPos[1] > currObjPos[1])
+            {
+                playerOverBlock = i;
+            }
+        }
+
+        const float* currBlockPos = dBodyGetPosition(myObjects[playerOverBlock]->objBody);
+        if(currPlayerPos[2] < currBlockPos[2] - 300)
+        {
+            resetNumber++;
+
+            if(!deathSound.isPlaying())
+                deathSound.play();
+
+            // reset player
+            dBodySetPosition(player.objBody, 0, 0, 0);
+            dMatrix3 R;
+            dRFromAxisAndAngle(R, 0, 0, 0, 0);
+            dBodySetRotation(player.objBody, R);
+            player.liftAmount = player.maxLiftAmount;
+            // reset world
+            for(unsigned int i=0; i < myObjects.size(); i++)
+            {
+                myObjects[i]->assignColour();
+            }
+        }
     }
 
     dSpaceCollide (space,0,&nearCallback);
     dWorldStep (world, 0.15);
-
     // remove all contact joints
     dJointGroupEmpty (contactgroup);
-
 }
 
 void ofApp::getInput(){
@@ -129,20 +170,48 @@ void ofApp::getInput(){
     player.steer = 0;
 
     if(player.speed < player.maxSpeed)
+    {
         if (keys[87] || keys[119] || keys[OF_KEY_UP]) // W/w/UP
+        {
             player.speed = player.maxSpeed;
 
+            if(wPressed == false) // stop displaying tutorial
+                wPressed = true;
+        }
+    }
+
     if(player.speed > -player.maxSpeed)
+    {
         if (keys[83] || keys[115] || keys[OF_KEY_DOWN]) // S/s/DOWN
+        {
             player.speed = -player.maxSpeed;
 
+            if(sPressed == false) // stop displaying tutorial
+                sPressed = true;
+        }
+    }
+
     if(player.steer < player.maxSteer)
+    {
         if (keys[68] || keys[100] || keys[OF_KEY_RIGHT]) // D/d/RIGHT
+        {
             player.steer = -player.maxSteer;
 
+            if(dPressed == false) // stop displaying tutorial
+                dPressed = true;
+        }
+    }
+
     if(player.steer > -player.maxSteer)
+    {
         if (keys[65] || keys[97] || keys[OF_KEY_LEFT]) // A/a/LEFT
+        {
             player.steer = player.maxSteer;
+
+            if(aPressed == false) // stop displaying tutorial
+                aPressed = true;
+        }
+    }
 
     if(keys[32]){ // SPACE
         player.lift = true;
@@ -195,25 +264,57 @@ void ofApp::draw(){
 
     ofPushMatrix();
 
+    /// INTERFACE
+    ofSetColor(ofColor::black);
+    ofDrawRectangle(10, 10, 0, player.maxLiftAmount, 100);
+
+    ofSetColor(ofColor::lightGoldenRodYellow);
+    ofDrawRectangle(10, 20, 0, player.liftAmount, 80);
+
+    /// TUTORIAL
     if(wPressed == false){
-        ofSetColor(ofColor::black);
+        ofSetColor(ofColor::white);
         myFont.drawString("W/up to go forward", (ofGetWindowWidth()/2) - 400, 100);
     }
 
     if(aPressed == false){
-        ofSetColor(ofColor::black);
+        ofSetColor(ofColor::white);
         myFont.drawString("A/left to turn left", 20, ofGetWindowHeight()/2 - 10);
     }
 
     if(sPressed == false){
-        ofSetColor(ofColor::black);
+        ofSetColor(ofColor::white);
         myFont.drawString("S/down to go backwards", (ofGetWindowWidth()/2) - 400, ofGetWindowHeight() - 150);
     }
 
     if(dPressed == false){
-        ofSetColor(ofColor::black);
+        ofSetColor(ofColor::white);
         myFont.drawString("D/right to turn right", ofGetWindowWidth() - 800, ofGetWindowHeight()/2 - 10);
     }
+
+    if(resetNumber == 0 &&(playerOverBlock > 0 && playerOverBlock < 4)){
+        ofSetColor(ofColor::black);
+        myFont.drawString("Reach the end of the path forward!", 0, ofGetWindowHeight()/4);
+    }
+
+    if(resetNumber == 0 &&(playerOverBlock > 3 && playerOverBlock < 26))
+    {
+        ofSetColor(ofColor::black);
+        myFont.drawString("Press SPACE to fly using energy!", 0, ofGetWindowHeight()/4+80);
+    }
+
+    if(resetNumber == 0 &&(playerOverBlock > 14 && playerOverBlock < 29))
+    {
+        ofSetColor(ofColor::black);
+        myFont.drawString("Touch coloured boxes to absorb energy!", 0, ofGetWindowHeight()/4+160);
+    }
+
+    if(resetNumber == 0 &&(playerOverBlock > 24 && playerOverBlock < 32))
+    {
+        ofSetColor(ofColor::black);
+        myFont.drawString("Absorb as few blocks as possible!", 0, ofGetWindowHeight()/4+240);
+    }
+
     ofPopMatrix();
 }
 
@@ -288,21 +389,18 @@ void ofApp::drawBox(const dReal*pos_ode, const dQuaternion rot_ode, const dReal*
 
 }
 
-void ofApp::collide(dGeomID o1, dGeomID o2)
+void ofApp::collide(dGeomID geom1, dGeomID geom2)
 {
-    //int g1 = (o1 == ground || o1 == ground_box);
-    //int g2 = (o2 == ground || o2 == ground_box);
-    //if (!(g1 ^ g2)) return; // if we are not colliding with anything we return
-
     const int N = 15;
     dContact contact[N];
+
     int i,n;
-    n = dCollide (o1,o2,N,&contact[0].geom,sizeof(dContact));
+    n = dCollide(geom1, geom2, N, &contact[0].geom,sizeof(dContact));
     if (n > 0) {
         for (i=0; i<n; i++) {
             contact[i].surface.mode = dContactSlip1 | dContactSlip2 |
                     dContactSoftERP | dContactSoftCFM | dContactApprox1;
-            contact[i].surface.mu = 0.5;
+            contact[i].surface.mu = 0.0001;
             contact[i].surface.slip1 = 0.1;
             contact[i].surface.slip2 = 0.1;
             contact[i].surface.soft_erp = 0.5;
@@ -311,6 +409,21 @@ void ofApp::collide(dGeomID o1, dGeomID o2)
             dJointAttach (c,
                           dGeomGetBody(contact[i].geom.g1),
                           dGeomGetBody(contact[i].geom.g2));
+        }
+
+        for(unsigned int i = 0; i < myObjects.size(); i++){
+            if((geom1 == player.objGeom && geom2 == myObjects[i]->objGeom))
+            {
+                if(myObjects[i]->objColour != ofColor::black)
+                {
+                    if(player.liftAmount < player.maxLiftAmount)
+                    {
+                        myObjects[i]->objColour.set(ofColor::black);
+                        player.rechargeSound.play();
+                        player.liftAmount = player.maxLiftAmount;
+                    }
+                }
+            }
         }
     }
 }

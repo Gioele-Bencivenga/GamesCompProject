@@ -20,6 +20,11 @@ public:
              float _length, float _width, float _height,
              ofQuaternion _rotation, dWorldID _world, dSpaceID _space);
 
+    /**
+     * @brief whether the obj has been touched by the player or not.
+     */
+    bool touched = false;
+
     /// ODE OBJECTS
     dBodyID objBody;
     dMass objMass;
@@ -63,6 +68,7 @@ public:
      * @param _modelName the filename of the .dae model.
      */
     void setModel(string _modelName);
+    void assignColour();
     /**
      * @brief The draw method pulls the latest data from ODE and draws the model at that location and orientation.
      * Thanks to Adam Stanton for providing it.

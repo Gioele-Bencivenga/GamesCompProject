@@ -24,8 +24,7 @@ MyObject::MyObject(float _x, float _y, float _z,
 
     setModel("alien.dae");
 
-    // colour randomly assigned
-    objColour.set(ofRandom(1, 254), ofRandom(1, 254), ofRandom(1, 254));
+    assignColour();
 }
 
 void MyObject::setupPhysics(float _x, float _y, float _z, dWorldID _world, dSpaceID _space){
@@ -37,6 +36,11 @@ void MyObject::setupPhysics(float _x, float _y, float _z, dWorldID _world, dSpac
     dBodySetMass(objBody, &objMass);
     objGeom = dCreateBox(_space, objLength, objWidth, objHeight);
     dGeomSetBody(objGeom, objBody);
+}
+
+void MyObject::assignColour()
+{
+    objColour.set(ofRandom(1, 160), ofRandom(1, 160), ofRandom(1, 160));
 }
 
 void MyObject::setPosition(float _x, float _y, float _z)
@@ -61,7 +65,7 @@ void MyObject::setModel(string _modelName){
     double scale = 1.0 / objModel.getNormalizedScale();
     objModel.setScale(scale, scale, scale);
     objModel.setRotation(0, 90.0, 1, 0, 0);
-    objModel.setPosition(objModel.getPosition().x, objModel.getPosition().y + 0.35, objModel.getPosition().z);
+    objModel.setPosition(objModel.getPosition().x, objModel.getPosition().y, objModel.getPosition().z - 0.2);
 }
 
 void MyObject::draw()

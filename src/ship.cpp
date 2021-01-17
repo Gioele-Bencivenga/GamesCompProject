@@ -7,16 +7,26 @@ Ship::Ship(){
 Ship::Ship(float _x, float _y, float _z, float _length, float _width, float _height, ofQuaternion _rotation, dWorldID _world, dSpaceID _space) : MyObject(_x, _y, _z, _length, _width, _height, _rotation, _world, _space)
 {
     // movement stuff
-    maxSpeed = 1, maxSteer = 0.3;
+    maxSpeed = 1.8, maxSteer = 0.25;
     speed = 0, steer = 0;
+    maxLiftAmount = 1000;
+    liftAmount = maxLiftAmount;
     // model
     setModel("ship_speederA.dae");
     // light?
     shipLight.setPosition(this->getModel().getPosition());
     shipLight.enable();
+    // sounds
+    shipEngineSound.load("sounds_shipEng.wav");
+    shipEngineSound.setLoop(true);
+    shipEngineSound.setVolume(0.5);
+    emptyEngineSound.load("sounds_empty.wav");
+    emptyEngineSound.setVolume(0.4);
+    rechargeSound.load("sounds_liftRecharge.wav");
+    rechargeSound.setVolume(0.7);
 
-    dBodySetMaxAngularSpeed(objBody, 0.6);
-    dBodySetDamping(objBody, 0.03, 0.15);
+    dBodySetMaxAngularSpeed(objBody, 0.5);
+    dBodySetDamping(objBody, 0.03, 0.3);
 }
 
 // found on http://ode.org/wikiold/htmlfile156.html
@@ -46,16 +56,34 @@ void Ship::updateMovement()
     currentAngularVelocity = dBodyGetAngularVel(objBody);
     currentRotation = dBodyGetRotation(objBody);
 
-    const float* yPos = dBodyGetPosition(objBody);
-    cout << yPos[0] << endl;
-
     /// UPWARDS
     if(lift == true)
     {
-        if(currentVelocity[2] < 1)
+        if(liftAmount > 0)
         {
-            dBodyAddForce(objBody, 0, 0, 0.8);
+            if(currentVelocity[2] < 3.5)
+            {
+                dBodyAddForce(objBody, 0, 0, 2.5);
+            }
+
+            liftAmount -= 7;
+
+            if(!shipEngineSound.isPlaying()) // play sound
+                shipEngineSound.play();
         }
+        else
+        {
+            if(!emptyEngineSound.isPlaying()) // play sound
+                emptyEngineSound.play();
+        }
+    }
+    else
+    {
+        if(shipEngineSound.isPlaying()) // stop sound
+            shipEngineSound.stop();
+
+        if(liftAmount < maxLiftAmount)
+            liftAmount += 1.2;
     }
 
     /// FORWARD/BACKWARDS
@@ -77,12 +105,12 @@ void Ship::updateMovement()
         //dBodySetRotation(objBody, currentRotation);
 
         //dBodyAddRelTorque(objBody, -0.002, 0, 0);
-            dBodyAddRelTorque(objBody, 0, 0.1, maxSteer);
+        dBodyAddRelTorque(objBody, 0, 0.1, maxSteer);
     }
     else if(steer == -maxSteer) // steering right
     {
         //dBodyAddRelTorque(objBody, 0.002, 0, 0);
-            dBodyAddRelTorque(objBody, 0, 0.1, -maxSteer);
+        dBodyAddRelTorque(objBody, 0, 0.1, -maxSteer);
     }
     else // if we are not steering
     {
