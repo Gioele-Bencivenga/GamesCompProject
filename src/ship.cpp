@@ -11,8 +11,34 @@ Ship::Ship(float _x, float _y, float _z, float _length, float _width, float _hei
     speed = 0, steer = 0;
     maxLiftAmount = 1000;
     liftAmount = maxLiftAmount;
-    // model
-    setModel("ship_speederA.dae");
+    // random model
+    int mod = ofRandom(1, 8);
+    switch(mod){
+    case 1:
+        setModel("ship_speederA.dae");
+        break;
+    case 2:
+        setModel("ship_speederB.dae");
+        break;
+    case 3:
+        setModel("ship_speederC.dae");
+        break;
+    case 4:
+        setModel("ship_speederD.dae");
+        break;
+    case 5:
+        setModel("ship_cargoA.dae");
+        break;
+    case 6:
+        setModel("ship_cargoB.dae");
+        break;
+    case 7:
+        setModel("ship_miner.dae");
+        break;
+    case 8:
+        setModel("ship_racer.dae");
+        break;
+    }
     // light?
     shipLight.setPosition(this->getModel().getPosition());
     shipLight.enable();
@@ -145,7 +171,7 @@ void Ship::draw()
     /* We can draw a transparent white box where the ODE object is, to
      * make sure that our model is being drawn approximately correctly */
     if(drawObject) {
-        ofSetColor(ofColor::white,128);
+        ofSetColor(ofColor::orange, 255);
         /* Save the current state of the graphics transform stack: */
         ofPushMatrix();
 

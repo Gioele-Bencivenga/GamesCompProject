@@ -73,6 +73,7 @@ public:
 
     /// FONTS
     ofTrueTypeFont myFont;
+    ofTrueTypeFont barFont;
 
     /// LIGHTS
     ofLight m_light1;
@@ -87,7 +88,9 @@ public:
     bool isPlayerExistent = false; // flag to know whether the player is instantiated or not
     const dReal* currPlayerPos;
     int resetNumber = 0;
-
+    bool playerWon = false;
+    int tot = 0;
+    float perc = 0;
     /**
      * @brief number of block in the path the player is over.
      * Warning: will often be 0 as the player is often over himself.
@@ -96,6 +99,7 @@ public:
 
     ///OBJECTS
     std::vector<MyObject*> myObjects;
+    int blocksAbsorbed = 0;
 
     /// TUTORIAL
     bool wPressed = false, aPressed = false, sPressed = false, dPressed = false;

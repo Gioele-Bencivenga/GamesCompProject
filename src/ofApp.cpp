@@ -62,6 +62,7 @@ void ofApp::setup(){
 
     // setup font
     myFont.load(OF_TTF_SANS, 64, true, true, true);
+    barFont.load(OF_TTF_SANS, 32, true, true, true);
 
     // setup input keys
     for(unsigned int i=0; i<65536; i++) keys[i] = 0;
@@ -73,7 +74,7 @@ void ofApp::setup(){
     currPlayerPos = dBodyGetPosition(player.objBody);
 
     // light
-    m_light1.setPosition(0,currPlayerPos[1] + 100, currPlayerPos[2] + 100);
+    m_light1.setPosition(0,currPlayerPos[1] + 100, currPlayerPos[2] + 400);
     //m_light1.lookAt(glm::vec3(0,0,0));
     m_light1.enable();
 
@@ -88,7 +89,7 @@ void ofApp::setup(){
     //winSound.setVolume(0.8);
 
     // start block
-    MyObject* startBlock = new MyObject(currPlayerPos[0], currPlayerPos[1], currPlayerPos[2] - 5,
+    MyObject* startBlock = new MyObject(currPlayerPos[0], currPlayerPos[1], currPlayerPos[2] - 15,
             150, 200, 50,
             *new ofQuaternion(0, 0, 0, 0), world, space);
     dRFromAxisAndAngle(R, 1, 0, 0, -0.1);
@@ -98,21 +99,47 @@ void ofApp::setup(){
 
     playerOverBlock = 0;
 
+    unsigned int pathSize = 70;
     // path creation algorithm
-    for(unsigned int i=0; i<80; i++)
+    for(unsigned int i=0; i < pathSize; i++)
     {
         MyObject* prevBlock = myObjects[i+1]; // get the last placed block
         const dReal* prevBlockPos = dBodyGetPosition(prevBlock->objBody); // get its position
         // create new block in position relative to previous
-        MyObject* blockToAdd = new MyObject(prevBlockPos[0] + ofRandom(-80, 80), prevBlockPos[1] + prevBlock->objWidth, prevBlockPos[2] - ofRandom(-40, 150),
-                ofRandom(2.5, 120), ofRandom(2.5, 120), ofRandom(2.5, 50),
+        MyObject* blockToAdd = new MyObject(prevBlockPos[0] + ofRandom(-80, 80), prevBlockPos[1] + prevBlock->objWidth, prevBlockPos[2] - ofRandom(-30, 80),
+                ofRandom(2.5, 150), ofRandom(2.5, 150), ofRandom(2.5, 60),
                 *new ofQuaternion(0, 0, 0, 0), world, space);
 
-        float rot = i/50;
+        float rot = 0;
+        if(i > 15 && i <= 25)
+            rot = 0.12f;
+        if(i > 25 && i <= 35)
+            rot = 0.25f;
+        if(i > 35 && i <= 45)
+            rot = 0.34f;
+        if(i > 45 && i <= 55)
+            rot = 0.45f;
+        if(i > 55 && i <= 65)
+            rot = 0.55f;
+        if(i > 65)
+            rot = 0.65f;
+
         dRFromAxisAndAngle(R, 1, 1, 0, ofRandom(-rot, rot));
         dBodySetRotation(blockToAdd->objBody, R);
         dBodySetKinematic(blockToAdd->objBody); // set stationary
         myObjects.push_back(blockToAdd); // add to group
+
+        if(i == pathSize - 1) // last block
+        {
+            MyObject* blockToAdd = new MyObject(prevBlockPos[0], prevBlockPos[1] + prevBlock->objWidth, prevBlockPos[2],
+                    200, 200, 80,
+                    *new ofQuaternion(0, 0, 0, 0), world, space);
+
+            dRFromAxisAndAngle(R, 0, 0, 0, 0);
+            dBodySetRotation(blockToAdd->objBody, R);
+            dBodySetKinematic(blockToAdd->objBody); // set stationary
+            myObjects.push_back(blockToAdd); // add to group
+        }
     }
 }
 
@@ -156,6 +183,17 @@ void ofApp::update()
             {
                 myObjects[i]->assignColour();
             }
+        }
+
+        if(playerOverBlock == myObjects.size() -1)
+        {
+            playerWon = true;
+            isPlayerExistent = false;
+
+            tot = myObjects.size()-1;
+            perc = (blocksAbsorbed/tot)*100;
+            perc = (blocksAbsorbed / static_cast<float>(tot)) * 100;
+            perc = 100 - perc;
         }
     }
 
@@ -254,9 +292,6 @@ void ofApp::draw(){
 
     ofPushMatrix();
 
-    ofSetColor(ofColor::lightGrey);
-    ofDrawGrid(1.5f, 500, false, false, false, false);
-
     for(auto x: myObjects ) x->draw();
 
     ofDisableDepthTest();
@@ -268,8 +303,11 @@ void ofApp::draw(){
     ofSetColor(ofColor::black);
     ofDrawRectangle(10, 10, 0, player.maxLiftAmount, 100);
 
-    ofSetColor(ofColor::lightGoldenRodYellow);
+    ofSetColor(ofColor::yellow);
     ofDrawRectangle(10, 20, 0, player.liftAmount, 80);
+
+    ofSetColor(ofColor::black);
+    barFont.drawString("Energy", 40, 80);
 
     /// TUTORIAL
     if(wPressed == false){
@@ -292,27 +330,38 @@ void ofApp::draw(){
         myFont.drawString("D/right to turn right", ofGetWindowWidth() - 800, ofGetWindowHeight()/2 - 10);
     }
 
-    if(resetNumber == 0 &&(playerOverBlock > 0 && playerOverBlock < 4)){
+    if(resetNumber == 0 &&(playerOverBlock > 0 && playerOverBlock < 8)){
         ofSetColor(ofColor::black);
-        myFont.drawString("Reach the end of the path forward!", 0, ofGetWindowHeight()/4);
+        myFont.drawString("Reach the last block in the path!", 40, ofGetWindowHeight()/4);
     }
 
-    if(resetNumber == 0 &&(playerOverBlock > 3 && playerOverBlock < 26))
+    if(resetNumber == 0 &&(playerOverBlock > 1 && playerOverBlock < 14))
     {
-        ofSetColor(ofColor::black);
-        myFont.drawString("Press SPACE to fly using energy!", 0, ofGetWindowHeight()/4+80);
+        myFont.drawString("Press SPACE to fly, uses energy (up left)", 40, ofGetWindowHeight()/4+120);
     }
 
-    if(resetNumber == 0 &&(playerOverBlock > 14 && playerOverBlock < 29))
+    if(resetNumber == 0 &&(playerOverBlock > 5 && playerOverBlock < 20))
     {
-        ofSetColor(ofColor::black);
-        myFont.drawString("Touch coloured boxes to absorb energy!", 0, ofGetWindowHeight()/4+160);
+        myFont.drawString("Touch coloured boxes to replenish your energy!", 40, ofGetWindowHeight()/4+240);
     }
 
-    if(resetNumber == 0 &&(playerOverBlock > 24 && playerOverBlock < 32))
+    if(resetNumber == 0 &&(playerOverBlock > 8 && playerOverBlock < 23))
     {
-        ofSetColor(ofColor::black);
-        myFont.drawString("Absorb as few blocks as possible!", 0, ofGetWindowHeight()/4+240);
+        myFont.drawString("Keep your energy and reach the end by\nabsorbing as little boxes as possible!", 40, ofGetWindowHeight()/4+360);
+    }
+
+    if(resetNumber > 0 &&(playerOverBlock >= 0 && playerOverBlock < 2))
+    {
+        myFont.drawString("You fell off the path!\nHappens to the best,\nBetter luck this time!", 40, ofGetWindowHeight()/4);
+    }
+
+    /// WIN
+    if(playerWon == true){
+        ofSetColor(ofColor::orange);
+        myFont.drawString("Congratulations, You Won! Great job.", (ofGetWindowWidth()/2) - 400, (ofGetWindowHeight()/3));
+        barFont.drawString("Your performance\nTotal boxes: " + to_string(tot), (ofGetWindowWidth()/2) - 400, (ofGetWindowHeight()/3) + 100);
+        barFont.drawString("Absorbed boxes: " + to_string(blocksAbsorbed), (ofGetWindowWidth()/2) - 400, (ofGetWindowHeight()/3) + 200);
+        barFont.drawString("Rating: " + to_string(perc) + "%!", (ofGetWindowWidth()/2) - 400, (ofGetWindowHeight()/3) + 300);
     }
 
     ofPopMatrix();
@@ -399,12 +448,13 @@ void ofApp::collide(dGeomID geom1, dGeomID geom2)
     if (n > 0) {
         for (i=0; i<n; i++) {
             contact[i].surface.mode = dContactSlip1 | dContactSlip2 |
-                    dContactSoftERP | dContactSoftCFM | dContactApprox1;
+                    dContactSoftERP | dContactSoftCFM | dContactApprox1 | dContactBounce;
             contact[i].surface.mu = 0.0001;
             contact[i].surface.slip1 = 0.1;
             contact[i].surface.slip2 = 0.1;
             contact[i].surface.soft_erp = 0.5;
-            contact[i].surface.soft_cfm = 0.3;
+            contact[i].surface.soft_cfm = 0.001;
+            contact[i].surface.bounce = 3.5;
             dJointID c = dJointCreateContact (world,contactgroup,&contact[i]);
             dJointAttach (c,
                           dGeomGetBody(contact[i].geom.g1),
@@ -421,6 +471,7 @@ void ofApp::collide(dGeomID geom1, dGeomID geom2)
                         myObjects[i]->objColour.set(ofColor::black);
                         player.rechargeSound.play();
                         player.liftAmount = player.maxLiftAmount;
+                        blocksAbsorbed++;
                     }
                 }
             }

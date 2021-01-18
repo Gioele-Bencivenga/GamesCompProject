@@ -40,7 +40,7 @@ void MyObject::setupPhysics(float _x, float _y, float _z, dWorldID _world, dSpac
 
 void MyObject::assignColour()
 {
-    objColour.set(ofRandom(1, 160), ofRandom(1, 160), ofRandom(1, 160));
+    objColour.set(ofRandom(1, 120), ofRandom(1, 120), ofRandom(1, 120));
 }
 
 void MyObject::setPosition(float _x, float _y, float _z)
@@ -59,7 +59,7 @@ ofxAssimpModelLoader MyObject::getModel()
 
 void MyObject::setModel(string _modelName){
     // load model
-    objModel.loadModel(_modelName, true);
+    objModel.loadModel(_modelName);
 
     // adjust model orientation
     double scale = 1.0 / objModel.getNormalizedScale();
