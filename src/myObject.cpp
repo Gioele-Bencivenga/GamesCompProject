@@ -40,7 +40,7 @@ void MyObject::setupPhysics(float _x, float _y, float _z, dWorldID _world, dSpac
 
 void MyObject::assignColour()
 {
-    objColour.set(ofRandom(1, 120), ofRandom(1, 120), ofRandom(1, 120));
+    objColour.set(ofRandom(120, 255), ofRandom(120, 255), ofRandom(120, 255));
 }
 
 void MyObject::setPosition(float _x, float _y, float _z)

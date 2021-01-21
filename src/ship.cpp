@@ -7,7 +7,7 @@ Ship::Ship(){
 Ship::Ship(float _x, float _y, float _z, float _length, float _width, float _height, ofQuaternion _rotation, dWorldID _world, dSpaceID _space) : MyObject(_x, _y, _z, _length, _width, _height, _rotation, _world, _space)
 {
     // movement stuff
-    maxSpeed = 1.8, maxSteer = 0.25;
+    maxSpeed = 1.8, maxSteer = 0.10;
     speed = 0, steer = 0;
     maxLiftAmount = 1000;
     liftAmount = maxLiftAmount;
@@ -51,8 +51,8 @@ Ship::Ship(float _x, float _y, float _z, float _length, float _width, float _hei
     rechargeSound.load("sounds_liftRecharge.wav");
     rechargeSound.setVolume(0.7);
 
-    dBodySetMaxAngularSpeed(objBody, 0.5);
-    dBodySetDamping(objBody, 0.03, 0.3);
+    dBodySetMaxAngularSpeed(objBody, 0.4);
+    dBodySetDamping(objBody, 0.03, 0.33);
 }
 
 // found on http://ode.org/wikiold/htmlfile156.html
@@ -89,7 +89,7 @@ void Ship::updateMovement()
         {
             if(currentVelocity[2] < 3.5)
             {
-                dBodyAddForce(objBody, 0, 0, 2.5);
+                dBodyAddForce(objBody, 0, 0, 2.3);
             }
 
             liftAmount -= 7;
@@ -128,27 +128,11 @@ void Ship::updateMovement()
     /// LEFT/RIGHT
     if(steer == maxSteer) // steering left
     {
-        //dBodySetRotation(objBody, currentRotation);
-
-        //dBodyAddRelTorque(objBody, -0.002, 0, 0);
-        dBodyAddRelTorque(objBody, 0, 0.1, maxSteer);
+        dBodyAddTorque(objBody, 0, 0, maxSteer);
     }
     else if(steer == -maxSteer) // steering right
     {
-        //dBodyAddRelTorque(objBody, 0.002, 0, 0);
-        dBodyAddRelTorque(objBody, 0, 0.1, -maxSteer);
-    }
-    else // if we are not steering
-    {
-        // the ship slows down its rotation
-        if(currentAngularVelocity[2] > 0) // turning right?
-        {
-            //dBodyAddTorque(objBody, 0, 0, -0.01); // contrast force
-        }
-        else if (currentAngularVelocity[2] < 0) // turning left?
-        {
-            //dBodyAddTorque(objBody, 0, 0, 0.01); // contrast force
-        }
+        dBodyAddTorque(objBody, 0, 0, -maxSteer);
     }
 }
 
